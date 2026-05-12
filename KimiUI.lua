@@ -605,6 +605,11 @@ function KimiUI:CreateWindow(config)
     local tabListLayout = Utility:CreateListLayout(tabScroll, 4)
     Utility:CreatePadding(tabScroll, 8)
 
+    --// Auto update CanvasSize for Tab Scroll
+    tabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tabScroll.CanvasSize = UDim2.new(0, 0, 0, tabListLayout.AbsoluteContentSize.Y + 16)
+    end)
+
     local tabContentArea = Utility:Create("Frame", {
         Name = "TabContentArea",
         BackgroundTransparency = 1,
@@ -720,6 +725,11 @@ function KimiUI:AddTab(config)
     local contentLayout = Utility:CreateListLayout(tabContent, 12)
     Utility:CreatePadding(tabContent, 14)
 
+    --// Auto update CanvasSize for Content Scroll
+    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 28)
+    end)
+
     local tabSections = {}
     local Tab = {
         Name = tabName,
@@ -809,6 +819,13 @@ function KimiUI:AddTab(config)
 
         local sectionLayout = Utility:CreateListLayout(sectionContent, 8)
         Utility:CreatePadding(sectionContent, 10)
+
+        --// Auto update Section height
+        sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            local contentHeight = sectionLayout.AbsoluteContentSize.Y + 20
+            sectionFrame.Size = UDim2.new(1, -5, 0, contentOffset + contentHeight)
+            sectionContent.Size = UDim2.new(1, 0, 0, contentHeight)
+        end)
 
         local Section = {
             Name = sectionName,
