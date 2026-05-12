@@ -38,7 +38,7 @@ local Themes = {
         BorderLight    = Color3.fromHex("#353639"),
         Accent         = Color3.fromHex("#5865f2"),
         AccentHover    = Color3.fromHex("#4752c4"),
-        AccentSoft     = Color3.fromHex("#5865f215"),
+        AccentSoft     = Color3.fromHex("#5865f2"),
         Success        = Color3.fromHex("#3ba55d"),
         Warning        = Color3.fromHex("#faa61a"),
         Error          = Color3.fromHex("#ed4245"),
@@ -64,7 +64,7 @@ local Themes = {
         BorderLight    = Color3.fromHex("#27304a"),
         Accent         = Color3.fromHex("#00b4d8"),
         AccentHover    = Color3.fromHex("#0096c7"),
-        AccentSoft     = Color3.fromHex("#00b4d815"),
+        AccentSoft     = Color3.fromHex("#00b4d8"),
         Success        = Color3.fromHex("#00c896"),
         Warning        = Color3.fromHex("#f4a261"),
         Error          = Color3.fromHex("#e63946"),
@@ -90,7 +90,7 @@ local Themes = {
         BorderLight    = Color3.fromHex("#3d2a40"),
         Accent         = Color3.fromHex("#e879a0"),
         AccentHover    = Color3.fromHex("#d5638c"),
-        AccentSoft     = Color3.fromHex("#e879a015"),
+        AccentSoft     = Color3.fromHex("#e879a0"),
         Success        = Color3.fromHex("#6ee7b7"),
         Warning        = Color3.fromHex("#fbbf24"),
         Error          = Color3.fromHex("#f87171"),
@@ -116,7 +116,7 @@ local Themes = {
         BorderLight    = Color3.fromHex("#3d3418"),
         Accent         = Color3.fromHex("#f59e0b"),
         AccentHover    = Color3.fromHex("#d97706"),
-        AccentSoft     = Color3.fromHex("#f59e0b15"),
+        AccentSoft     = Color3.fromHex("#f59e0b"),
         Success        = Color3.fromHex("#34d399"),
         Warning        = Color3.fromHex("#f59e0b"),
         Error          = Color3.fromHex("#f87171"),
@@ -142,7 +142,7 @@ local Themes = {
         BorderLight    = Color3.fromHex("#d8dae0"),
         Accent         = Color3.fromHex("#5865f2"),
         AccentHover    = Color3.fromHex("#4752c4"),
-        AccentSoft     = Color3.fromHex("#5865f210"),
+        AccentSoft     = Color3.fromHex("#5865f2"),
         Success        = Color3.fromHex("#2d9e5f"),
         Warning        = Color3.fromHex("#e08c00"),
         Error          = Color3.fromHex("#c92a2a"),
@@ -618,7 +618,7 @@ function NexusUI:CreateWindow(cfg)
             old._frame.Visible = false
         end
         Window._active = tab
-        Tween(tab._btn, { BackgroundColor3 = C.AccentSoft, BackgroundTransparency = 0 }, 0.15)
+        Tween(tab._btn, { BackgroundColor3 = C.AccentSoft, BackgroundTransparency = 0.88 }, 0.15)
         tab._btnLabel.TextColor3 = C.TextPrimary
         tab._btnIcon.TextColor3  = C.Accent
         tab._frame.Visible = true
@@ -1251,7 +1251,7 @@ function NexusUI:CreateWindow(cfg)
                 })
                 AddCorner(ob, 6)
                 ob.MouseEnter:Connect(function()
-                    Tween(ob, { BackgroundColor3 = C.AccentSoft, BackgroundTransparency = 0 }, 0.1)
+                    Tween(ob, { BackgroundColor3 = C.AccentSoft, BackgroundTransparency = 0.88 }, 0.1)
                     Tween(ob, { TextColor3 = C.TextPrimary }, 0.1)
                 end)
                 ob.MouseLeave:Connect(function()
@@ -1388,7 +1388,7 @@ function NexusUI:CreateWindow(cfg)
                 listening = true
                 keyBtn.Text = "..."
                 keyBtn.TextColor3 = C.Accent
-                Tween(keyBtn, { BackgroundColor3 = C.AccentSoft }, 0.12)
+                Tween(keyBtn, { BackgroundColor3 = C.AccentSoft, BackgroundTransparency = 0.88 }, 0.12)
             end)
 
             UserInputService.InputBegan:Connect(function(input, gpe)
