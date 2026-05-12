@@ -1912,9 +1912,6 @@ function NexusUI:CreateWindow(cfg)
     end
 
     -- ── Close / Minimize buttons ──
-    closeBtn:FindFirstChildOfClass("TextButton") or Make("TextButton", {
-        Size = UDim2.new(1,0,1,0), BackgroundTransparency=1, Text="", ZIndex=6, Parent=closeBtn
-    })
     local closeBtnClik = Make("TextButton", {
         Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Text="", ZIndex=6, Parent=closeBtn
     })
