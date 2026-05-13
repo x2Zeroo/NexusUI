@@ -1,28 +1,35 @@
 --[[
-    KimiUI Library - PREMIUM EDITION v2.0
-    The Most Beautiful Roblox UI Library with Modern Neon/Deep Dark Theme
-    Inspired by Modern Flagship UI Design
-    Enhanced by Kimi Team
---]]
+    KimiUI Library — Premium Edition v3.0
+    ██╗  ██╗██╗███╗   ███╗██╗    ██╗   ██╗██╗
+    ██║ ██╔╝██║████╗ ████║██║    ██║   ██║██║
+    █████╔╝ ██║██╔████╔██║██║    ██║   ██║██║
+    ██╔═██╗ ██║██║╚██╔╝██║██║    ██║   ██║██║
+    ██║  ██╗██║██║ ╚═╝ ██║██║    ╚██████╔╝██║
+    ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚═╝     ╚═════╝ ╚═╝
+    Ultra-Modern Premium Roblox UI Library
+    — Glass Morphism • Gradient Accents • Smooth Animations —
+]]
 
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local Players       = game:GetService("Players")
+local TweenService  = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
-local TextService = game:GetService("TextService")
-local CoreGui = game:GetService("CoreGui")
+local RunService    = game:GetService("RunService")
+local HttpService   = game:GetService("HttpService")
+local TextService   = game:GetService("TextService")
+local CoreGui       = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
---// Utility Functions (PREMIUM MODS)
+-- ═══════════════════════════════════════════════════
+--  UTILITY ENGINE
+-- ═══════════════════════════════════════════════════
 local Utility = {}
 
 function Utility:Tween(instance, properties, duration, easingStyle, easingDirection, callback)
-    easingStyle = easingStyle or Enum.EasingStyle.Quart
-    easingDirection = easingDirection or Enum.EasingDirection.Out
-    duration = duration or 0.45 -- Slightly slower for smoothness
+    easingStyle      = easingStyle      or Enum.EasingStyle.Quart
+    easingDirection  = easingDirection  or Enum.EasingDirection.Out
+    duration         = duration         or 0.35
     local tween = TweenService:Create(instance, TweenInfo.new(duration, easingStyle, easingDirection), properties)
     tween:Play()
     if callback then tween.Completed:Connect(callback) end
@@ -52,198 +59,408 @@ function Utility:Clamp(value, min, max)
 end
 
 function Utility:CreateCorner(parent, radius)
-    return Utility:Create("UICorner", { CornerRadius = UDim.new(0, radius or 10), Parent = parent })
+    return Utility:Create("UICorner", { CornerRadius = UDim.new(0, radius or 8), Parent = parent })
 end
 
--- Premium Stroke (Thinner, cleaner)
 function Utility:CreateStroke(parent, color, thickness, transparency)
     return Utility:Create("UIStroke", {
-        Color = color or Color3.fromRGB(80, 80, 100),
-        Thickness = thickness or 1.1,
-        Transparency = transparency or 0.75,
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Color = color or Color3.fromRGB(60, 60, 70),
+        Thickness = thickness or 1,
+        Transparency = transparency or 0.8,
         Parent = parent
     })
 end
 
 function Utility:CreatePadding(parent, padding)
-    padding = padding or 14 -- Increased padding
+    padding = padding or 12
     return Utility:Create("UIPadding", {
-        PaddingLeft = UDim.new(0, padding),
-        PaddingRight = UDim.new(0, padding),
-        PaddingTop = UDim.new(0, padding),
+        PaddingLeft   = UDim.new(0, padding),
+        PaddingRight  = UDim.new(0, padding),
+        PaddingTop    = UDim.new(0, padding),
         PaddingBottom = UDim.new(0, padding),
-        Parent = parent
+        Parent        = parent
     })
 end
 
 function Utility:CreateListLayout(parent, padding, sortOrder)
     return Utility:Create("UIListLayout", {
-        Padding = UDim.new(0, padding or 10),
+        Padding   = UDim.new(0, padding or 8),
         SortOrder = sortOrder or Enum.SortOrder.LayoutOrder,
-        Parent = parent
+        Parent    = parent
     })
+end
+
+function Utility:CreateGradient(parent, colorA, colorB, rotation, transpA, transpB)
+    local cs = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, colorA),
+        ColorSequenceKeypoint.new(1, colorB)
+    })
+    local ts = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, transpA or 0),
+        NumberSequenceKeypoint.new(1, transpB or 0)
+    })
+    return Utility:Create("UIGradient", {
+        Color        = cs,
+        Transparency = ts,
+        Rotation     = rotation or 0,
+        Parent       = parent
+    })
+end
+
+function Utility:Brighten(color, amt)
+    return Color3.new(
+        math.clamp(color.R + amt, 0, 1),
+        math.clamp(color.G + amt, 0, 1),
+        math.clamp(color.B + amt, 0, 1)
+    )
+end
+
+function Utility:Darken(color, amt)
+    return Color3.new(
+        math.clamp(color.R - amt, 0, 1),
+        math.clamp(color.G - amt, 0, 1),
+        math.clamp(color.B - amt, 0, 1)
+    )
 end
 
 function Utility:SetDrag(frame, dragArea)
     dragArea = dragArea or frame
-    local dragging = false
-    local dragStart = nil
-    local startPos = nil
+    local dragging, dragStart, startPos = false, nil, nil
     dragArea.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
-            startPos = frame.Position
+            startPos  = frame.Position
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
         end
     end)
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
             dragging = false
         end
     end)
 end
 
--- SOPHISTICATED SHADOW (Premium layer)
-function Utility:CreateShadow(parent, transparency, size, offset)
-    size = size or 35
-    offset = offset or 6
+function Utility:CreateShadow(parent, transparency, size)
+    size = size or 24
     return Utility:Create("ImageLabel", {
-        Name = "Shadow",
-        AnchorPoint = Vector2.new(0.5, 0.5),
+        Name             = "Shadow",
+        AnchorPoint      = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.5, 0, 0.5, offset),
-        Size = UDim2.new(1, size * 2, 1, size * 2),
-        ZIndex = parent.ZIndex - 1,
-        Image = "rbxassetid://5554236805",
-        ImageColor3 = Color3.fromRGB(0, 0, 0),
-        ImageTransparency = transparency or 0.55, -- Slightly darker shadow
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(23, 23, 277, 277),
-        Parent = parent
+        Position         = UDim2.new(0.5, 0, 0.5, 8),
+        Size             = UDim2.new(1, size * 2, 1, size * 2),
+        ZIndex           = parent.ZIndex - 1,
+        Image            = "rbxassetid://5554236805",
+        ImageColor3      = Color3.fromRGB(0, 0, 0),
+        ImageTransparency= transparency or 0.4,
+        ScaleType        = Enum.ScaleType.Slice,
+        SliceCenter      = Rect.new(23, 23, 277, 277),
+        Parent           = parent
     })
 end
 
--- Advanced Ripple with better fade
 function Utility:CreateRipple(button, color)
     button.ClipsDescendants = true
     button.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local ripple = Utility:Create("Frame", {
-                Name = "Ripple",
-                AnchorPoint = Vector2.new(0.5, 0.5),
+                Name             = "Ripple",
+                AnchorPoint      = Vector2.new(0.5, 0.5),
                 BackgroundColor3 = color or Color3.fromRGB(255, 255, 255),
-                BackgroundTransparency = 0.75,
-                Position = UDim2.new(0, input.Position.X - button.AbsolutePosition.X, 0, input.Position.Y - button.AbsolutePosition.Y),
-                Size = UDim2.new(0, 0, 0, 0),
-                ZIndex = button.ZIndex + 1,
-                Parent = button
+                BackgroundTransparency = 0.82,
+                Position         = UDim2.new(0, input.Position.X - button.AbsolutePosition.X,
+                                             0, input.Position.Y - button.AbsolutePosition.Y),
+                Size             = UDim2.new(0, 0, 0, 0),
+                ZIndex           = button.ZIndex + 1,
+                Parent           = button
             })
-            Utility:CreateCorner(ripple, 200)
-            local maxSize = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 3
-            Utility:Tween(ripple, { Size = UDim2.new(0, maxSize, 0, maxSize), BackgroundTransparency = 1 }, 0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, function() ripple:Destroy() end)
+            Utility:CreateCorner(ripple, 100)
+            local maxSize = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 2.5
+            Utility:Tween(ripple,
+                { Size = UDim2.new(0, maxSize, 0, maxSize), BackgroundTransparency = 1 },
+                0.65, Enum.EasingStyle.Quart, Enum.EasingDirection.Out,
+                function() ripple:Destroy() end
+            )
         end
     end)
 end
 
--- Advanced Glow effect creator
-function Utility:CreateGlow(parent, color, transparency, size, offset)
-    local glow = Utility:Create("ImageLabel", {
-        Name = "Glow",
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0.5, 0, 0.5, offset or 0),
-        Size = UDim2.new(1, size or 20, 1, size or 20),
-        ZIndex = parent.ZIndex - 1,
-        Image = "rbxassetid://6015093766", -- Bright glow asset
-        ImageColor3 = color,
-        ImageTransparency = transparency or 0.6,
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(49, 49, 450, 450),
-        Parent = parent
-    })
-    return glow
-end
-
---// Themes - PREMIUM NEON SERIES
+-- ═══════════════════════════════════════════════════
+--  THEME DEFINITIONS
+-- ═══════════════════════════════════════════════════
 local Themes = {
-    Default = { -- New PREMIUM DEEP PURPLE NEON
-        Primary = Color3.fromRGB(13, 13, 19),   -- Deep Dark
-        Secondary = Color3.fromRGB(19, 19, 28), -- Acrylic Container
-        Accent = Color3.fromRGB(167, 139, 250), -- Bright Neon Purple
-        AccentLight = Color3.fromRGB(196, 181, 253),
-        AccentDark = Color3.fromRGB(124, 58, 237),
-        Background = Color3.fromRGB(8, 8, 12),
-        Foreground = Color3.fromRGB(31, 31, 46), -- Hover container
-        Text = Color3.fromRGB(249, 250, 251),
-        TextDark = Color3.fromRGB(160, 170, 190),
-        TextDarker = Color3.fromRGB(110, 120, 140),
-        Border = Color3.fromRGB(45, 45, 65),
-        BorderLight = Color3.fromRGB(75, 75, 100),
-        Success = Color3.fromRGB(52, 211, 153), -- Neon Green
-        Warning = Color3.fromRGB(251, 191, 36), -- Neon Yellow
-        Error = Color3.fromRGB(248, 113, 113),   -- Neon Red
-        Info = Color3.fromRGB(96, 165, 250),    -- Neon Blue
-        TagPrimary = Color3.fromRGB(139, 92, 246),
-        TagSuccess = Color3.fromRGB(34, 197, 94),
-        TagWarning = Color3.fromRGB(234, 179, 8),
-        TagError = Color3.fromRGB(239, 68, 68),
-        TagInfo = Color3.fromRGB(59, 130, 246)
+    Default = {
+        Primary       = Color3.fromRGB(13, 13, 18),
+        Secondary     = Color3.fromRGB(24, 24, 30),
+        Accent        = Color3.fromRGB(139, 92, 246),
+        AccentLight   = Color3.fromRGB(167, 139, 250),
+        AccentDark    = Color3.fromRGB(109, 40, 217),
+        Background    = Color3.fromRGB(10, 10, 14),
+        Foreground    = Color3.fromRGB(32, 32, 40),
+        Text          = Color3.fromRGB(245, 246, 250),
+        TextDark      = Color3.fromRGB(160, 165, 180),
+        TextDarker    = Color3.fromRGB(100, 108, 130),
+        Border        = Color3.fromRGB(40, 40, 52),
+        BorderLight   = Color3.fromRGB(64, 64, 80),
+        Success       = Color3.fromRGB(34, 211, 104),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 68, 68),
+        Info          = Color3.fromRGB(59, 160, 246),
+        TagPrimary    = Color3.fromRGB(139, 92, 246),
+        TagSuccess    = Color3.fromRGB(34, 211, 104),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 68, 68),
+        TagInfo       = Color3.fromRGB(59, 160, 246),
     },
-    ["Dark Neon"] = {
-        Primary = Color3.fromRGB(10, 10, 14),
-        Secondary = Color3.fromRGB(18, 18, 24),
-        Accent = Color3.fromRGB(50, 255, 200), -- Aqua Neon
-        AccentLight = Color3.fromRGB(150, 255, 230),
-        AccentDark = Color3.fromRGB(0, 200, 150),
-        Background = Color3.fromRGB(7, 7, 10),
-        Foreground = Color3.fromRGB(26, 26, 36),
-        Text = Color3.fromRGB(240, 240, 245),
-        TextDark = Color3.fromRGB(150, 160, 175),
-        TextDarker = Color3.fromRGB(100, 110, 125),
-        Border = Color3.fromRGB(40, 40, 55),
-        BorderLight = Color3.fromRGB(70, 70, 90),
-        Success = Color3.fromRGB(50, 255, 100),
-        Warning = Color3.fromRGB(255, 200, 50),
-        Error = Color3.fromRGB(255, 70, 70),
-        Info = Color3.fromRGB(70, 150, 255)
+    Dark = {
+        Primary       = Color3.fromRGB(8, 8, 12),
+        Secondary     = Color3.fromRGB(18, 18, 24),
+        Accent        = Color3.fromRGB(139, 92, 246),
+        AccentLight   = Color3.fromRGB(167, 139, 250),
+        AccentDark    = Color3.fromRGB(109, 40, 217),
+        Background    = Color3.fromRGB(6, 6, 10),
+        Foreground    = Color3.fromRGB(26, 26, 34),
+        Text          = Color3.fromRGB(229, 231, 240),
+        TextDark      = Color3.fromRGB(148, 163, 184),
+        TextDarker    = Color3.fromRGB(96, 112, 140),
+        Border        = Color3.fromRGB(28, 28, 40),
+        BorderLight   = Color3.fromRGB(50, 50, 70),
+        Success       = Color3.fromRGB(34, 211, 104),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 68, 68),
+        Info          = Color3.fromRGB(59, 160, 246),
+        TagPrimary    = Color3.fromRGB(139, 92, 246),
+        TagSuccess    = Color3.fromRGB(34, 211, 104),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 68, 68),
+        TagInfo       = Color3.fromRGB(59, 160, 246),
     },
-    -- ... other existing themes can be kept but we only add premium for example
+    Midnight = {
+        Primary       = Color3.fromRGB(18, 18, 30),
+        Secondary     = Color3.fromRGB(28, 28, 46),
+        Accent        = Color3.fromRGB(129, 140, 248),
+        AccentLight   = Color3.fromRGB(165, 180, 252),
+        AccentDark    = Color3.fromRGB(79, 90, 220),
+        Background    = Color3.fromRGB(13, 13, 24),
+        Foreground    = Color3.fromRGB(38, 38, 58),
+        Text          = Color3.fromRGB(226, 232, 240),
+        TextDark      = Color3.fromRGB(148, 163, 184),
+        TextDarker    = Color3.fromRGB(96, 112, 140),
+        Border        = Color3.fromRGB(48, 48, 72),
+        BorderLight   = Color3.fromRGB(68, 68, 96),
+        Success       = Color3.fromRGB(52, 211, 153),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 113, 113),
+        Info          = Color3.fromRGB(96, 165, 250),
+        TagPrimary    = Color3.fromRGB(129, 140, 248),
+        TagSuccess    = Color3.fromRGB(52, 211, 153),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 113, 113),
+        TagInfo       = Color3.fromRGB(96, 165, 250),
+    },
+    Ocean = {
+        Primary       = Color3.fromRGB(12, 20, 40),
+        Secondary     = Color3.fromRGB(20, 32, 60),
+        Accent        = Color3.fromRGB(56, 189, 248),
+        AccentLight   = Color3.fromRGB(125, 211, 252),
+        AccentDark    = Color3.fromRGB(14, 145, 213),
+        Background    = Color3.fromRGB(8, 14, 30),
+        Foreground    = Color3.fromRGB(30, 44, 72),
+        Text          = Color3.fromRGB(224, 242, 254),
+        TextDark      = Color3.fromRGB(148, 175, 200),
+        TextDarker    = Color3.fromRGB(96, 120, 148),
+        Border        = Color3.fromRGB(48, 64, 88),
+        BorderLight   = Color3.fromRGB(68, 88, 112),
+        Success       = Color3.fromRGB(34, 211, 104),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 68, 68),
+        Info          = Color3.fromRGB(59, 160, 246),
+        TagPrimary    = Color3.fromRGB(56, 189, 248),
+        TagSuccess    = Color3.fromRGB(34, 211, 104),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 68, 68),
+        TagInfo       = Color3.fromRGB(59, 160, 246),
+    },
+    Forest = {
+        Primary       = Color3.fromRGB(16, 26, 16),
+        Secondary     = Color3.fromRGB(26, 40, 26),
+        Accent        = Color3.fromRGB(74, 222, 128),
+        AccentLight   = Color3.fromRGB(134, 239, 172),
+        AccentDark    = Color3.fromRGB(22, 163, 74),
+        Background    = Color3.fromRGB(12, 20, 12),
+        Foreground    = Color3.fromRGB(32, 52, 32),
+        Text          = Color3.fromRGB(220, 252, 231),
+        TextDark      = Color3.fromRGB(148, 180, 155),
+        TextDarker    = Color3.fromRGB(96, 130, 100),
+        Border        = Color3.fromRGB(36, 56, 36),
+        BorderLight   = Color3.fromRGB(56, 80, 56),
+        Success       = Color3.fromRGB(74, 222, 128),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 68, 68),
+        Info          = Color3.fromRGB(59, 160, 246),
+        TagPrimary    = Color3.fromRGB(74, 222, 128),
+        TagSuccess    = Color3.fromRGB(34, 197, 94),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 68, 68),
+        TagInfo       = Color3.fromRGB(59, 160, 246),
+    },
+    Sunset = {
+        Primary       = Color3.fromRGB(36, 20, 20),
+        Secondary     = Color3.fromRGB(52, 30, 30),
+        Accent        = Color3.fromRGB(251, 146, 60),
+        AccentLight   = Color3.fromRGB(253, 186, 116),
+        AccentDark    = Color3.fromRGB(220, 85, 10),
+        Background    = Color3.fromRGB(28, 16, 16),
+        Foreground    = Color3.fromRGB(52, 36, 36),
+        Text          = Color3.fromRGB(255, 237, 213),
+        TextDark      = Color3.fromRGB(200, 170, 148),
+        TextDarker    = Color3.fromRGB(155, 125, 105),
+        Border        = Color3.fromRGB(72, 48, 48),
+        BorderLight   = Color3.fromRGB(96, 64, 64),
+        Success       = Color3.fromRGB(74, 222, 128),
+        Warning       = Color3.fromRGB(253, 224, 71),
+        Error         = Color3.fromRGB(248, 113, 113),
+        Info          = Color3.fromRGB(96, 165, 250),
+        TagPrimary    = Color3.fromRGB(251, 146, 60),
+        TagSuccess    = Color3.fromRGB(74, 222, 128),
+        TagWarning    = Color3.fromRGB(253, 224, 71),
+        TagError      = Color3.fromRGB(248, 113, 113),
+        TagInfo       = Color3.fromRGB(96, 165, 250),
+    },
+    Sakura = {
+        Primary       = Color3.fromRGB(32, 18, 26),
+        Secondary     = Color3.fromRGB(46, 28, 40),
+        Accent        = Color3.fromRGB(244, 114, 182),
+        AccentLight   = Color3.fromRGB(251, 182, 217),
+        AccentDark    = Color3.fromRGB(200, 50, 130),
+        Background    = Color3.fromRGB(24, 14, 20),
+        Foreground    = Color3.fromRGB(50, 34, 46),
+        Text          = Color3.fromRGB(253, 242, 248),
+        TextDark      = Color3.fromRGB(200, 165, 184),
+        TextDarker    = Color3.fromRGB(155, 122, 140),
+        Border        = Color3.fromRGB(62, 40, 56),
+        BorderLight   = Color3.fromRGB(88, 60, 80),
+        Success       = Color3.fromRGB(52, 211, 153),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 113, 113),
+        Info          = Color3.fromRGB(96, 165, 250),
+        TagPrimary    = Color3.fromRGB(244, 114, 182),
+        TagSuccess    = Color3.fromRGB(52, 211, 153),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 113, 113),
+        TagInfo       = Color3.fromRGB(96, 165, 250),
+    },
+    Cyber = {
+        Primary       = Color3.fromRGB(8, 8, 16),
+        Secondary     = Color3.fromRGB(16, 16, 28),
+        Accent        = Color3.fromRGB(6, 182, 212),
+        AccentLight   = Color3.fromRGB(103, 232, 249),
+        AccentDark    = Color3.fromRGB(8, 120, 160),
+        Background    = Color3.fromRGB(6, 6, 13),
+        Foreground    = Color3.fromRGB(22, 22, 40),
+        Text          = Color3.fromRGB(207, 250, 254),
+        TextDark      = Color3.fromRGB(140, 200, 220),
+        TextDarker    = Color3.fromRGB(88, 145, 165),
+        Border        = Color3.fromRGB(28, 40, 60),
+        BorderLight   = Color3.fromRGB(48, 65, 90),
+        Success       = Color3.fromRGB(34, 211, 104),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 68, 68),
+        Info          = Color3.fromRGB(59, 160, 246),
+        TagPrimary    = Color3.fromRGB(6, 182, 212),
+        TagSuccess    = Color3.fromRGB(34, 211, 104),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 68, 68),
+        TagInfo       = Color3.fromRGB(59, 160, 246),
+    },
+    Royal = {
+        Primary       = Color3.fromRGB(24, 16, 38),
+        Secondary     = Color3.fromRGB(38, 26, 58),
+        Accent        = Color3.fromRGB(168, 85, 247),
+        AccentLight   = Color3.fromRGB(200, 145, 255),
+        AccentDark    = Color3.fromRGB(120, 40, 200),
+        Background    = Color3.fromRGB(18, 12, 30),
+        Foreground    = Color3.fromRGB(46, 32, 68),
+        Text          = Color3.fromRGB(243, 232, 255),
+        TextDark      = Color3.fromRGB(180, 155, 205),
+        TextDarker    = Color3.fromRGB(130, 108, 160),
+        Border        = Color3.fromRGB(58, 40, 85),
+        BorderLight   = Color3.fromRGB(82, 58, 115),
+        Success       = Color3.fromRGB(52, 211, 153),
+        Warning       = Color3.fromRGB(251, 191, 36),
+        Error         = Color3.fromRGB(248, 113, 113),
+        Info          = Color3.fromRGB(96, 165, 250),
+        TagPrimary    = Color3.fromRGB(168, 85, 247),
+        TagSuccess    = Color3.fromRGB(52, 211, 153),
+        TagWarning    = Color3.fromRGB(251, 191, 36),
+        TagError      = Color3.fromRGB(248, 113, 113),
+        TagInfo       = Color3.fromRGB(96, 165, 250),
+    },
+    Monochrome = {
+        Primary       = Color3.fromRGB(16, 16, 18),
+        Secondary     = Color3.fromRGB(26, 26, 30),
+        Accent        = Color3.fromRGB(210, 210, 218),
+        AccentLight   = Color3.fromRGB(230, 230, 236),
+        AccentDark    = Color3.fromRGB(155, 155, 165),
+        Background    = Color3.fromRGB(10, 10, 12),
+        Foreground    = Color3.fromRGB(38, 38, 44),
+        Text          = Color3.fromRGB(244, 244, 246),
+        TextDark      = Color3.fromRGB(158, 158, 170),
+        TextDarker    = Color3.fromRGB(108, 108, 120),
+        Border        = Color3.fromRGB(44, 44, 52),
+        BorderLight   = Color3.fromRGB(64, 64, 75),
+        Success       = Color3.fromRGB(161, 161, 170),
+        Warning       = Color3.fromRGB(200, 200, 210),
+        Error         = Color3.fromRGB(220, 140, 140),
+        Info          = Color3.fromRGB(175, 175, 200),
+        TagPrimary    = Color3.fromRGB(210, 210, 218),
+        TagSuccess    = Color3.fromRGB(161, 161, 170),
+        TagWarning    = Color3.fromRGB(200, 200, 210),
+        TagError      = Color3.fromRGB(220, 140, 140),
+        TagInfo       = Color3.fromRGB(175, 175, 200),
+    },
 }
 
---// Main Library
+-- ═══════════════════════════════════════════════════
+--  MAIN LIBRARY
+-- ═══════════════════════════════════════════════════
 local KimiUI = {}
 KimiUI.__index = KimiUI
 
-KimiUI.Version = "2.0.0 Premium"
-KimiUI.Themes = Themes
+KimiUI.Version = "3.0.0"
+KimiUI.Themes  = Themes
 
+-- ─── CreateWindow ─────────────────────────────────
 function KimiUI:CreateWindow(config)
     config = config or {}
-    local windowName = config.Name or config.Title or "KimiUI Premium"
-    local themeName = config.Theme or "Default"
-    local size = config.Size or UDim2.new(0, 600, 0, 450) -- Standard premium size
-    local minSize = config.MinSize or Vector2.new(520, 390)
-    local canResize = config.CanResize ~= false
-    local canDrag = config.CanDrag ~= false
-    local showCloseButton = config.ShowCloseButton ~= false
-    local showMinimizeButton = config.ShowMinimizeButton ~= false
+    local windowName        = config.Name or config.Title or "KimiUI"
+    local themeName         = config.Theme or "Default"
+    local size              = config.Size or UDim2.new(0, 720, 0, 520)
+    local minSize           = config.MinSize or Vector2.new(560, 400)
+    local canResize         = config.CanResize ~= false
+    local canDrag           = config.CanDrag  ~= false
+    local showCloseButton   = config.ShowCloseButton    ~= false
+    local showMinimizeButton= config.ShowMinimizeButton ~= false
 
     local theme = Themes[themeName] or Themes.Default
 
+    -- ScreenGui
     local screenGui = Utility:Create("ScreenGui", {
-        Name = windowName .. "_KimiUIPrem",
-        ResetOnSpawn = false,
-        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        Name          = windowName .. "_KimiUI",
+        ResetOnSpawn  = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     })
-
-    -- Sync protection (standard)
     if syn and syn.protect_gui then
         syn.protect_gui(screenGui)
         screenGui.Parent = CoreGui
@@ -253,57 +470,68 @@ function KimiUI:CreateWindow(config)
         screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     end
 
+    -- ── Main Frame ──────────────────────────────────
+    local targetPos = config.Position or UDim2.new(0.5, -size.X.Offset / 2, 0.5, -size.Y.Offset / 2)
     local mainFrame = Utility:Create("Frame", {
-        Name = "Main",
-        BackgroundColor3 = theme.Background,
-        BorderSizePixel = 0,
-        Position = config.Position or UDim2.new(0.5, -size.X.Offset / 2, 0.5, -size.Y.Offset / 2),
-        Size = size,
-        ClipsDescendants = false, -- Need for shadow/glow
-        Parent = screenGui
+        Name                 = "Main",
+        BackgroundColor3     = theme.Background,
+        BorderSizePixel      = 0,
+        Position             = targetPos,
+        Size                 = UDim2.new(0, size.X.Offset * 0.94, 0, size.Y.Offset * 0.92),
+        ClipsDescendants     = true,
+        Parent               = screenGui,
     })
     Utility:CreateCorner(mainFrame, 14)
-    local winShadow = Utility:CreateShadow(mainFrame, 0.5, 40, 10)
-    local winGlow = Utility:CreateGlow(mainFrame, theme.Accent, 0.8, 30, 0)
-    Utility:CreateStroke(mainFrame, theme.Border, 1.3, 0.7)
+    Utility:CreateShadow(mainFrame, 0.38, 28)
+
+    -- Outer glow border
+    Utility:CreateStroke(mainFrame, theme.Accent, 1.5, 0.82)
+
+    -- Subtle background gradient (top slightly lighter)
+    Utility:CreateGradient(mainFrame, Utility:Brighten(theme.Background, 0.03), theme.Background, 90)
 
     if canDrag then Utility:SetDrag(mainFrame) end
 
+    -- Entrance animation
+    task.defer(function()
+        Utility:Tween(mainFrame, {
+            Size     = size,
+            Position = targetPos,
+        }, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    end)
+
+    -- ── Resize Handle ──────────────────────────────
     if canResize then
         local resizeHandle = Utility:Create("Frame", {
-            Name = "ResizeHandle",
+            Name                = "ResizeHandle",
             BackgroundTransparency = 1,
-            Position = UDim2.new(1, -22, 1, -22),
-            Size = UDim2.new(0, 22, 0, 22),
-            ZIndex = 10,
-            Parent = mainFrame
+            Position            = UDim2.new(1, -20, 1, -20),
+            Size                = UDim2.new(0, 20, 0, 20),
+            ZIndex              = 10,
+            Parent              = mainFrame,
         })
-        local resizeIcon = Utility:Create("ImageLabel", {
+        Utility:Create("ImageLabel", {
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 6, 0, 6),
-            Size = UDim2.new(0, 12, 0, 12),
-            Image = "rbxassetid://6761432098",
-            ImageColor3 = theme.TextDarker,
-            ImageTransparency = 0.5,
-            ZIndex = 10,
-            Parent = resizeHandle
+            Position               = UDim2.new(0, 4, 0, 4),
+            Size                   = UDim2.new(0, 12, 0, 12),
+            Image                  = "rbxassetid://6761432098",
+            ImageColor3            = theme.Accent,
+            ImageTransparency      = 0.5,
+            ZIndex                 = 10,
+            Parent                 = resizeHandle,
         })
-        local resizing = false
-        local resizeStart = nil
-        local startSize = nil
+        local resizing, resizeStart, startSize = false, nil, nil
         resizeHandle.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                resizing = true
-                resizeStart = input.Position
-                startSize = mainFrame.Size
+                resizing = true; resizeStart = input.Position; startSize = mainFrame.Size
             end
         end)
         UserInputService.InputChanged:Connect(function(input)
             if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
                 local delta = input.Position - resizeStart
-                local newWidth = math.max(minSize.X, startSize.X.Offset + delta.X)
-                local newHeight = math.max(minSize.Y, startSize.Y.Offset + delta.Y)
-                mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+                mainFrame.Size = UDim2.new(0,
+                    math.max(minSize.X, startSize.X.Offset + delta.X), 0,
+                    math.max(minSize.Y, startSize.Y.Offset + delta.Y))
             end
         end)
         UserInputService.InputEnded:Connect(function(input)
@@ -311,829 +539,937 @@ function KimiUI:CreateWindow(config)
         end)
     end
 
-    --// Premium Title Bar (Modern Height)
+    -- ── Title Bar ──────────────────────────────────
     local titleBar = Utility:Create("Frame", {
-        Name = "TitleBar",
+        Name             = "TitleBar",
         BackgroundColor3 = theme.Primary,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 48), -- Slightly taller
-        Parent = mainFrame
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 48),
+        Parent           = mainFrame,
     })
-    Utility:CreateCorner(titleBar, 14)
-    
-    -- Fix corner bottom
-    local cornerFix = Utility:Create("Frame", {
-        Name = "CornerFix",
-        BackgroundColor3 = theme.Primary,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 1, -14),
-        Size = UDim2.new(1, 0, 0, 14),
-        ZIndex = titleBar.ZIndex,
-        Parent = titleBar
-    })
+    -- Titlebar gradient (top = brighter, subtle)
+    Utility:CreateGradient(
+        titleBar,
+        Utility:Brighten(theme.Primary, 0.055),
+        theme.Primary,
+        90
+    )
 
-    -- Premium Accent Gradient Line
-    Utility:Create("Frame", {
-        Name = "AccentLine",
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 1, -2),
-        Size = UDim2.new(1, 0, 0, 2),
-        Parent = titleBar
-    }, {
-        Utility:Create("UIGradient", {
-            Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, theme.AccentDark),
-                ColorSequenceKeypoint.new(0.5, theme.Accent),
-                ColorSequenceKeypoint.new(1, theme.AccentDark)
-            })
-        })
+    -- Accent glow (soft, wider)
+    local accentGlow = Utility:Create("Frame", {
+        Name             = "AccentGlow",
+        BackgroundColor3 = theme.Accent,
+        BackgroundTransparency = 0.72,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 1, -5),
+        Size             = UDim2.new(1, 0, 0, 5),
+        Parent           = titleBar,
     })
+    -- Accent line (sharp, on top of glow)
+    local accentLine = Utility:Create("Frame", {
+        Name             = "AccentLine",
+        BackgroundColor3 = theme.Accent,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 1, -2),
+        Size             = UDim2.new(1, 0, 0, 2),
+        Parent           = titleBar,
+    })
+    Utility:CreateGradient(accentLine, theme.AccentLight, theme.AccentDark, 0)
 
-    local windowIcon = Utility:Create("ImageLabel", {
-        Name = "Icon",
+    -- Window icon with circular tinted background
+    local iconBg = Utility:Create("Frame", {
+        Name                 = "IconBg",
+        BackgroundColor3     = theme.Accent,
+        BackgroundTransparency = 0.82,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 12, 0.5, -14),
+        Size                 = UDim2.new(0, 28, 0, 28),
+        Parent               = titleBar,
+    })
+    Utility:CreateCorner(iconBg, 8)
+
+    Utility:Create("ImageLabel", {
+        Name                 = "Icon",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 16, 0, 12),
-        Size = UDim2.new(0, 24, 0, 24),
-        Image = config.Icon or "rbxassetid://10734947230",
-        ImageColor3 = theme.Accent,
-        Parent = titleBar
+        AnchorPoint          = Vector2.new(0.5, 0.5),
+        Position             = UDim2.new(0.5, 0, 0.5, 0),
+        Size                 = UDim2.new(0, 18, 0, 18),
+        Image                = config.Icon or "rbxassetid://7733965386",
+        ImageColor3          = theme.AccentLight,
+        Parent               = iconBg,
     })
-    local iconGlow = Utility:CreateGlow(windowIcon, theme.Accent, 0.7, 10)
 
     local windowTitle = Utility:Create("TextLabel", {
-        Name = "Title",
+        Name                 = "Title",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 52, 0, 0),
-        Size = UDim2.new(1, -150, 1, 0),
-        Font = Enum.Font.GothamBold,
-        Text = windowName,
-        TextColor3 = theme.Text,
-        TextSize = 16, -- Cleaner size
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = titleBar
+        Position             = UDim2.new(0, 48, 0, 0),
+        Size                 = UDim2.new(1, -150, 1, 0),
+        Font                 = Enum.Font.GothamBlack,
+        Text                 = windowName,
+        TextColor3           = theme.Text,
+        TextSize             = 15,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = titleBar,
     })
 
-    local buttonsFrame = Utility:Create("Frame", {
-        Name = "Buttons",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(1, -95, 0, 0),
-        Size = UDim2.new(0, 95, 1, 0),
-        ZIndex = titleBar.ZIndex + 1,
-        Parent = titleBar
+    -- Version badge
+    local versionBadge = Utility:Create("Frame", {
+        Name                 = "VersionBadge",
+        BackgroundColor3     = theme.Accent,
+        BackgroundTransparency = 0.78,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 48 + TextService:GetTextSize(windowName, 15, Enum.Font.GothamBlack, Vector2.new(999,999)).X + 8, 0.5, -9),
+        Size                 = UDim2.new(0, 48, 0, 18),
+        Parent               = titleBar,
     })
+    Utility:CreateCorner(versionBadge, 5)
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size                   = UDim2.new(1, 0, 1, 0),
+        Font                   = Enum.Font.GothamBold,
+        Text                   = "v3.0",
+        TextColor3             = theme.AccentLight,
+        TextSize               = 10,
+        Parent                 = versionBadge,
+    })
+
+    -- Window control buttons
+    local buttonsFrame = Utility:Create("Frame", {
+        Name                 = "Buttons",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(1, -96, 0, 0),
+        Size                 = UDim2.new(0, 96, 1, 0),
+        Parent               = titleBar,
+    })
+
+    local function makeTitleBtn(name, symbol, xPos, w, hoverColor)
+        local btn = Utility:Create("TextButton", {
+            Name                 = name,
+            BackgroundTransparency = 1,
+            Position             = UDim2.new(0, xPos, 0, 0),
+            Size                 = UDim2.new(0, w, 1, 0),
+            AutoButtonColor      = false,
+            Font                 = Enum.Font.GothamBold,
+            Text                 = symbol,
+            TextColor3           = theme.TextDark,
+            TextSize             = 20,
+            Parent               = buttonsFrame,
+        })
+        -- Hover background pill
+        local hoverBg = Utility:Create("Frame", {
+            Name                 = "HoverBg",
+            AnchorPoint          = Vector2.new(0.5, 0.5),
+            BackgroundColor3     = hoverColor or theme.Foreground,
+            BackgroundTransparency = 1,
+            BorderSizePixel      = 0,
+            Position             = UDim2.new(0.5, 0, 0.5, 0),
+            Size                 = UDim2.new(0, w - 10, 0, 28),
+            ZIndex               = btn.ZIndex - 1,
+            Parent               = btn,
+        })
+        Utility:CreateCorner(hoverBg, 7)
+        btn.MouseEnter:Connect(function()
+            Utility:Tween(hoverBg, { BackgroundTransparency = 0.75 }, 0.18)
+            Utility:Tween(btn, { TextColor3 = hoverColor or theme.Text }, 0.18)
+        end)
+        btn.MouseLeave:Connect(function()
+            Utility:Tween(hoverBg, { BackgroundTransparency = 1 }, 0.18)
+            Utility:Tween(btn, { TextColor3 = theme.TextDark }, 0.18)
+        end)
+        return btn
+    end
 
     if showMinimizeButton then
-        local minimizeBtn = Utility:Create("TextButton", {
-            Name = "Minimize",
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, 45, 1, 0),
-            Font = Enum.Font.GothamBold,
-            Text = "−", -- UI element for minimize
-            TextColor3 = theme.TextDark,
-            TextSize = 18,
-            Parent = buttonsFrame
-        })
-        minimizeBtn.MouseEnter:Connect(function() Utility:Tween(minimizeBtn, {TextColor3 = theme.Text}, 0.2) end)
-        minimizeBtn.MouseLeave:Connect(function() Utility:Tween(minimizeBtn, {TextColor3 = theme.TextDark}, 0.2) end)
+        local minimizeBtn = makeTitleBtn("Minimize", "−", 0, 48, theme.BorderLight)
         local minimized = false
         minimizeBtn.MouseButton1Click:Connect(function()
             minimized = not minimized
             if minimized then
-                Utility:Tween(winGlow, {ImageTransparency = 1}, 0.2)
-                Utility:Tween(mainFrame, {Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, 48)}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                mainFrame.ClipsDescendants = true
+                Utility:Tween(mainFrame, { Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, 48) }, 0.38, Enum.EasingStyle.Quart)
             else
-                mainFrame.ClipsDescendants = false
-                Utility:Tween(mainFrame, {Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, size.Y.Offset)}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                Utility:Tween(winGlow, {ImageTransparency = 0.8}, 0.6)
+                Utility:Tween(mainFrame, { Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, size.Y.Offset) }, 0.38, Enum.EasingStyle.Quart)
             end
         end)
     end
 
     if showCloseButton then
-        local closeBtn = Utility:Create("TextButton", {
-            Name = "Close",
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 45, 0, 0),
-            Size = UDim2.new(0, 45, 1, 0),
-            Font = Enum.Font.GothamBold,
-            Text = "×", -- UI element for close
-            TextColor3 = theme.TextDark,
-            TextSize = 22,
-            Parent = buttonsFrame
-        })
-        closeBtn.MouseEnter:Connect(function() Utility:Tween(closeBtn, {TextColor3 = theme.Error}, 0.2) end)
-        closeBtn.MouseLeave:Connect(function() Utility:Tween(closeBtn, {TextColor3 = theme.TextDark}, 0.2) end)
+        local closeBtn = makeTitleBtn("Close", "×", 48, 48, theme.Error)
         closeBtn.MouseButton1Click:Connect(function()
-            -- Elegant shrink animation
-            mainFrame.ClipsDescendants = true
-            Utility:Tween(winGlow, {ImageTransparency = 1}, 0.1)
-            Utility:Tween(winShadow, {ImageTransparency = 1}, 0.1)
-            Utility:Tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(mainFrame.Position.X.Scale, mainFrame.Position.X.Offset + mainFrame.AbsoluteSize.X/2, mainFrame.Position.Y.Scale, mainFrame.Position.Y.Offset + mainFrame.AbsoluteSize.Y/2)}, 0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In, function() screenGui:Destroy() end)
+            Utility:Tween(mainFrame, { Size = UDim2.new(0, 0, 0, 0) }, 0.32, Enum.EasingStyle.Back, Enum.EasingDirection.In, function()
+                screenGui:Destroy()
+            end)
         end)
     end
 
+    -- ── Content Area ───────────────────────────────
     local contentArea = Utility:Create("Frame", {
-        Name = "Content",
+        Name                 = "Content",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 48),
-        Size = UDim2.new(1, 0, 1, -48),
-        ZIndex = 1,
-        Parent = mainFrame
+        Position             = UDim2.new(0, 0, 0, 48),
+        Size                 = UDim2.new(1, 0, 1, -48),
+        Parent               = mainFrame,
     })
-    Utility:CreateCorner(contentArea, 14) -- Round content area as well
 
-    -- Premium Tab Bar Design
+    -- ── Tab Sidebar ────────────────────────────────
     local tabContainer = Utility:Create("Frame", {
-        Name = "TabContainer",
+        Name             = "TabContainer",
         BackgroundColor3 = theme.Primary,
-        BorderSizePixel = 0,
-        Size = UDim2.new(0, 175, 1, 0), -- Slightly wider
-        Parent = contentArea
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(0, 172, 1, 0),
+        Parent           = contentArea,
     })
-    Utility:CreateCorner(tabContainer, 14)
-    
-    -- tabs corner fix
-    Utility:Create("Frame", {
-        BackgroundColor3 = theme.Primary,
-        BorderSizePixel = 0,
-        Size = UDim2.new(0, 14, 1, 0),
-        Parent = tabContainer
-    })
-    Utility:Create("Frame", {
-        BackgroundColor3 = theme.Primary,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 1, -14),
-        Size = UDim2.new(1, 0, 0, 14),
-        Parent = tabContainer
-    })
+    -- Sidebar gradient
+    Utility:CreateGradient(tabContainer, Utility:Brighten(theme.Primary, 0.025), theme.Primary, 90)
 
-    local tabSeparator = Utility:Create("Frame", {
-        Name = "Separator",
+    -- Sidebar right border
+    Utility:Create("Frame", {
+        Name             = "Border",
         BackgroundColor3 = theme.Border,
-        BorderSizePixel = 0,
-        Position = UDim2.new(1, -1, 0, 15),
-        Size = UDim2.new(0, 1, 1, -30),
-        Parent = tabContainer
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(1, -1, 0, 0),
+        Size             = UDim2.new(0, 1, 1, 0),
+        Parent           = tabContainer,
+    })
+    -- Subtle accent glow on the border
+    Utility:Create("Frame", {
+        Name                 = "BorderGlow",
+        BackgroundColor3     = theme.Accent,
+        BackgroundTransparency = 0.88,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(1, -2, 0, 0),
+        Size                 = UDim2.new(0, 2, 1, 0),
+        Parent               = tabContainer,
     })
 
     local tabScroll = Utility:Create("ScrollingFrame", {
-        Name = "TabScroll",
+        Name                   = "TabScroll",
         BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 10), -- padding top
-        Size = UDim2.new(1, 0, 1, -20),
-        CanvasSize = UDim2.new(0, 0, 0, 0),
-        ScrollBarThickness = 1, -- Invisible but scrollable
-        ScrollBarImageTransparency = 1,
-        Parent = tabContainer
+        BorderSizePixel        = 0,
+        Size                   = UDim2.new(1, 0, 1, 0),
+        CanvasSize             = UDim2.new(0, 0, 0, 0),
+        ScrollBarThickness     = 3,
+        ScrollBarImageColor3   = theme.Accent,
+        ScrollBarImageTransparency = 0.55,
+        Parent                 = tabContainer,
     })
-
-    local tabListLayout = Utility:CreateListLayout(tabScroll, 6) -- Spacing
+    local tabListLayout = Utility:CreateListLayout(tabScroll, 5)
     Utility:CreatePadding(tabScroll, 10)
-
-    --// Tab Scroll Canvas Auto Update
     tabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         tabScroll.CanvasSize = UDim2.new(0, 0, 0, tabListLayout.AbsoluteContentSize.Y + 20)
     end)
 
-    -- tab content area corner fix
     local tabContentArea = Utility:Create("Frame", {
-        Name = "TabContentArea",
+        Name                   = "TabContentArea",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 175, 0, 0),
-        Size = UDim2.new(1, -175, 1, 0),
-        Parent = contentArea
+        Position               = UDim2.new(0, 172, 0, 0),
+        Size                   = UDim2.new(1, -172, 1, 0),
+        Parent                 = contentArea,
     })
-
     local tabContents = Utility:Create("Folder", {
-        Name = "TabContents",
-        Parent = tabContentArea
+        Name   = "TabContents",
+        Parent = tabContentArea,
     })
 
+    -- ── Window Object ──────────────────────────────
     local Window = setmetatable({}, KimiUI)
-    Window.Theme = theme
-    Window.ThemeName = themeName
-    Window.ScreenGui = screenGui
-    Window.MainFrame = mainFrame
-    Window.WinGlow = winGlow
-    Window.TabContainer = tabScroll
+    Window.Theme          = theme
+    Window.ThemeName      = themeName
+    Window.ScreenGui      = screenGui
+    Window.MainFrame      = mainFrame
+    Window.TabContainer   = tabScroll
     Window.TabContentArea = tabContentArea
-    Window.TabContents = tabContents
-    Window.Tabs = {}
-    Window.ActiveTab = nil
-    Window.Elements = {}
-    Window.Flags = {}
-    Window.Config = config
-    KimiUI.CurrentWindow = Window
+    Window.TabContents    = tabContents
+    Window.Tabs           = {}
+    Window.ActiveTab      = nil
+    Window.Elements       = {}
+    Window.Flags          = {}
+    Window.Connections    = {}
+    Window.Config         = config
+    KimiUI.CurrentWindow  = Window
 
     return Window
 end
 
+-- ─── SetTheme ─────────────────────────────────────
 function KimiUI:SetTheme(themeName)
     local theme = Themes[themeName]
     if not theme then return end
-    self.Theme = theme
+    self.Theme     = theme
     self.ThemeName = themeName
-    -- Implement theme update for elements if necessary
-    -- Current implementation assumes recreate window for theme change
-    -- Window:Notify({Title = "Theme Info", Content = "Restart UI for full theme change.", Type = "Info"})
+    for _, element in pairs(self.Elements) do
+        if element.UpdateTheme then element:UpdateTheme(theme) end
+    end
 end
 
---// Add Tab (Premium Style)
+function KimiUI:CreateCustomTheme(name, colors)
+    Themes[name] = colors
+end
+
+-- ─── AddTab ───────────────────────────────────────
 function KimiUI:AddTab(config)
     config = config or {}
-    local tabName = config.Name or "Tab"
-    local tabIcon = config.Icon or nil
+    local tabName  = config.Name  or "Tab"
+    local tabIcon  = config.Icon  or nil
     local tabColor = config.Color or self.Theme.Accent
 
+    -- Tab button
     local tabButton = Utility:Create("TextButton", {
-        Name = tabName .. "TabButton",
+        Name             = tabName .. "Tab",
         BackgroundColor3 = self.Theme.Secondary,
-        BackgroundTransparency = 1, -- Start transparent
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 42), -- Slightly taller
-        AutoButtonColor = false,
-        Font = Enum.Font.GothamSemibold,
-        Text = "",
-        Parent = self.TabContainer
+        BackgroundTransparency = 0.4,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, -20, 0, 40),
+        AutoButtonColor  = false,
+        Font             = Enum.Font.GothamSemibold,
+        Text             = "",
+        Parent           = self.TabContainer,
     })
     Utility:CreateCorner(tabButton, 10)
 
-    -- Premium Indicator Style (Pill shape)
-    local tabIndicator = Utility:Create("Frame", {
-        Name = "Indicator",
-        BackgroundColor3 = tabColor,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0.5, -0), -- Pilled shape center
-        AnchorPoint = Vector2.new(0, 0.5),
-        Size = UDim2.new(0, 0, 0, 20), -- Height 20
-        Parent = tabButton
+    -- Active tab gradient overlay (hidden by default)
+    local activeGradient = Utility:Create("Frame", {
+        Name                 = "ActiveGradient",
+        BackgroundColor3     = tabColor,
+        BackgroundTransparency = 1,
+        BorderSizePixel      = 0,
+        Size                 = UDim2.new(1, 0, 1, 0),
+        Parent               = tabButton,
     })
-    Utility:CreateCorner(tabIndicator, 10)
-    local indicGlow = Utility:CreateGlow(tabIndicator, tabColor, 0.8, 10)
-    indicGlow.Enabled = false
+    Utility:CreateCorner(activeGradient, 10)
+    Utility:CreateGradient(activeGradient, tabColor, Utility:Darken(tabColor, 0.08), 0, 0.88, 0.95)
+
+    -- Left glow indicator
+    local tabIndicator = Utility:Create("Frame", {
+        Name             = "Indicator",
+        BackgroundColor3 = tabColor,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 0.5, 0),
+        Size             = UDim2.new(0, 4, 0, 0),
+        Parent           = tabButton,
+    })
+    Utility:CreateCorner(tabIndicator, 2)
+
+    -- Indicator glow
+    local indicatorGlow = Utility:Create("Frame", {
+        Name                 = "IndicatorGlow",
+        BackgroundColor3     = tabColor,
+        BackgroundTransparency = 0.65,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 0, 0.5, 0),
+        Size                 = UDim2.new(0, 10, 0, 0),
+        Parent               = tabButton,
+    })
+    Utility:CreateCorner(indicatorGlow, 5)
 
     if tabIcon then
-        local icon = Utility:Create("ImageLabel", {
-            Name = "Icon",
+        local iconContainer = Utility:Create("Frame", {
+            Name                 = "IconContainer",
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 14, 0.5, -10), -- Adjusted position
-            Size = UDim2.new(0, 20, 0, 20),
-            Image = tabIcon,
-            ImageColor3 = self.Theme.TextDark,
-            Parent = tabButton
+            Position             = UDim2.new(0, 10, 0.5, -10),
+            Size                 = UDim2.new(0, 20, 0, 20),
+            Parent               = tabButton,
+        })
+        Utility:Create("ImageLabel", {
+            Name                 = "Icon",
+            BackgroundTransparency = 1,
+            AnchorPoint          = Vector2.new(0.5, 0.5),
+            Position             = UDim2.new(0.5, 0, 0.5, 0),
+            Size                 = UDim2.new(0, 18, 0, 18),
+            Image                = tabIcon,
+            ImageColor3          = self.Theme.TextDark,
+            Parent               = iconContainer,
         })
     end
 
     local tabText = Utility:Create("TextLabel", {
-        Name = "Text",
+        Name                 = "Text",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, tabIcon and 44 or 18, 0, 0),
-        Size = UDim2.new(1, -(tabIcon and 50 or 24), 1, 0),
-        Font = Enum.Font.GothamSemibold,
-        Text = tabName,
-        TextColor3 = self.Theme.TextDark,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = tabButton
+        Position             = UDim2.new(0, tabIcon and 36 or 14, 0, 0),
+        Size                 = UDim2.new(1, -52, 1, 0),
+        Font                 = Enum.Font.GothamSemibold,
+        Text                 = tabName,
+        TextColor3           = self.Theme.TextDark,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = tabButton,
     })
 
+    -- Tab content scroll
     local tabContent = Utility:Create("ScrollingFrame", {
-        Name = tabName .. "Content",
+        Name                   = tabName .. "Content",
         BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 1, 0),
-        CanvasSize = UDim2.new(0, 0, 0, 0),
-        ScrollBarThickness = 2, -- Premium scrollbar
-        ScrollBarImageColor3 = tabColor,
-        ScrollBarImageTransparency = 0.6,
-        Visible = false,
-        Parent = self.TabContents
+        BorderSizePixel        = 0,
+        Size                   = UDim2.new(1, 0, 1, 0),
+        CanvasSize             = UDim2.new(0, 0, 0, 0),
+        ScrollBarThickness     = 4,
+        ScrollBarImageColor3   = self.Theme.Accent,
+        ScrollBarImageTransparency = 0.5,
+        Visible                = false,
+        Parent                 = self.TabContents,
     })
-
-    local contentLayout = Utility:CreateListLayout(tabContent, 12) -- Element spacing
-    Utility:CreatePadding(tabContent, 16) -- Content padding
-
-    --// Content Scroll Canvas Auto Update
+    local contentLayout = Utility:CreateListLayout(tabContent, 12)
+    Utility:CreatePadding(tabContent, 14)
     contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 32)
+        tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 28)
     end)
 
     local Tab = {
-        Name = tabName,
-        Button = tabButton,
-        Content = tabContent,
+        Name      = tabName,
+        Button    = tabButton,
+        Content   = tabContent,
         Indicator = tabIndicator,
-        IndicGlow = indicGlow,
-        TabText = tabText,
-        Icon = tabButton:FindFirstChild("Icon"),
-        Sections = {},
-        Window = self,
-        Color = tabColor
+        Sections  = {},
+        Window    = self,
+        Color     = tabColor,
     }
     table.insert(self.Tabs, Tab)
 
+    -- Hover
     tabButton.MouseEnter:Connect(function()
         if self.ActiveTab ~= Tab then
-            Utility:Tween(tabButton, {BackgroundTransparency = 0.7, BackgroundColor3 = self.Theme.Foreground}, 0.2)
-            if Tab.Icon then Utility:Tween(Tab.Icon, {ImageColor3 = self.Theme.Text}, 0.2) end
-            Utility:Tween(tabText, {TextColor3 = self.Theme.Text}, 0.2)
+            Utility:Tween(tabButton, { BackgroundColor3 = self.Theme.Foreground, BackgroundTransparency = 0.1 }, 0.2)
+            local icon = tabButton:FindFirstChild("Icon", true)
+            if icon then Utility:Tween(icon, { ImageColor3 = self.Theme.Text }, 0.2) end
+            Utility:Tween(tabText, { TextColor3 = self.Theme.Text }, 0.2)
         end
     end)
-
     tabButton.MouseLeave:Connect(function()
         if self.ActiveTab ~= Tab then
-            Utility:Tween(tabButton, {BackgroundTransparency = 1}, 0.2)
-            if Tab.Icon then Utility:Tween(Tab.Icon, {ImageColor3 = self.Theme.TextDark}, 0.2) end
-            Utility:Tween(tabText, {TextColor3 = self.Theme.TextDark}, 0.2)
+            Utility:Tween(tabButton, { BackgroundColor3 = self.Theme.Secondary, BackgroundTransparency = 0.4 }, 0.2)
+            local icon = tabButton:FindFirstChild("Icon", true)
+            if icon then Utility:Tween(icon, { ImageColor3 = self.Theme.TextDark }, 0.2) end
+            Utility:Tween(tabText, { TextColor3 = self.Theme.TextDark }, 0.2)
         end
     end)
-
     tabButton.MouseButton1Click:Connect(function() self:SelectTab(Tab) end)
 
     if #self.Tabs == 1 then self:SelectTab(Tab) end
 
-    --// Tab Functions (Section & Elements)
-    function Tab:AddSection(config)
-        config = config or {}
-        local sectionName = config.Name or "Section"
-        local sectionDesc = config.Description or ""
+    -- ── AddSection ──────────────────────────────────
+    function Tab:AddSection(cfg)
+        cfg = cfg or {}
+        local sectionName = cfg.Name or "Section"
+        local sectionDesc = cfg.Description or ""
 
-        -- Premium Section Design (Acrylic Card)
         local sectionFrame = Utility:Create("Frame", {
-            Name = sectionName .. "Section",
+            Name             = sectionName .. "Section",
             BackgroundColor3 = self.Window.Theme.Secondary,
-            BackgroundTransparency = 0.2, -- Acrylic effect base
-            BorderSizePixel = 0,
-            Size = UDim2.new(1, -0, 0, 44),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            Parent = self.Content
+            BorderSizePixel  = 0,
+            Size             = UDim2.new(1, -6, 0, 40),
+            AutomaticSize    = Enum.AutomaticSize.Y,
+            Parent           = self.Content,
         })
         Utility:CreateCorner(sectionFrame, 12)
-        Utility:CreateStroke(sectionFrame, self.Window.Theme.Border, 1, 0.8)
-        -- Utility:CreateShadow(sectionFrame, 0.7, 10, 2) -- Minor inner shadow for depth
+        -- Glass-like section gradient
+        Utility:CreateGradient(
+            sectionFrame,
+            Utility:Brighten(self.Window.Theme.Secondary, 0.03),
+            self.Window.Theme.Secondary,
+            90
+        )
+        -- Subtle outer stroke
+        Utility:CreateStroke(sectionFrame, self.Window.Theme.BorderLight, 1, 0.85)
 
-        local sectionTitle = Utility:Create("TextLabel", {
-            Name = "Title",
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 16, 0, 14),
-            Size = UDim2.new(1, -32, 0, 22),
-            Font = Enum.Font.GothamBold,
-            Text = sectionName,
-            TextColor3 = self.Window.Theme.Text,
-            TextSize = 15,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = sectionFrame
+        -- Left accent bar (gradient)
+        local accentBar = Utility:Create("Frame", {
+            Name             = "AccentBar",
+            BackgroundColor3 = self.Window.Theme.Accent,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, 0, 0, 10),
+            Size             = UDim2.new(0, 3, 1, -20),
+            Parent           = sectionFrame,
         })
-        -- Title glow
-        local titleGlow = Utility:CreateGlow(sectionTitle, self.Color, 0.8, 8, 0)
+        Utility:CreateCorner(accentBar, 2)
+        Utility:CreateGradient(accentBar, self.Window.Theme.AccentLight, self.Window.Theme.AccentDark, 90)
 
-        local contentOffset = 38
+        -- Section header
+        local sectionTitle = Utility:Create("TextLabel", {
+            Name                 = "Title",
+            BackgroundTransparency = 1,
+            Position             = UDim2.new(0, 16, 0, 12),
+            Size                 = UDim2.new(1, -32, 0, 20),
+            Font                 = Enum.Font.GothamBlack,
+            Text                 = sectionName,
+            TextColor3           = self.Window.Theme.Text,
+            TextSize             = 13,
+            TextXAlignment       = Enum.TextXAlignment.Left,
+            Parent               = sectionFrame,
+        })
+
+        local contentOffset = 34
         if sectionDesc ~= "" then
-            local sectionDescLabel = Utility:Create("TextLabel", {
-                Name = "Description",
+            Utility:Create("TextLabel", {
+                Name                 = "Description",
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 16, 0, 36),
-                Size = UDim2.new(1, -32, 0, 16),
-                Font = Enum.Font.Gotham,
-                Text = sectionDesc,
-                TextColor3 = self.Window.Theme.TextDark,
-                TextSize = 12,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = sectionFrame
+                Position             = UDim2.new(0, 16, 0, 32),
+                Size                 = UDim2.new(1, -32, 0, 16),
+                Font                 = Enum.Font.Gotham,
+                Text                 = sectionDesc,
+                TextColor3           = self.Window.Theme.TextDarker,
+                TextSize             = 11,
+                TextXAlignment       = Enum.TextXAlignment.Left,
+                Parent               = sectionFrame,
             })
-            contentOffset = 58
+            contentOffset = 50
         end
 
-        local sectionContent = Utility:Create("Frame", {
-            Name = "Content",
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 0, contentOffset),
-            Size = UDim2.new(1, 0, 1, -contentOffset),
-            Parent = sectionFrame
+        -- Thin separator under header
+        Utility:Create("Frame", {
+            Name             = "Separator",
+            BackgroundColor3 = self.Window.Theme.Border,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, 14, 0, contentOffset - 2),
+            Size             = UDim2.new(1, -28, 0, 1),
+            Parent           = sectionFrame,
         })
 
-        local sectionLayout = Utility:CreateListLayout(sectionContent, 10) -- Spacing between elements
-        Utility:CreatePadding(sectionContent, 12) -- Inner padding
-
-        --// Section Height Auto Update
+        local sectionContent = Utility:Create("Frame", {
+            Name                 = "Content",
+            BackgroundTransparency = 1,
+            Position             = UDim2.new(0, 0, 0, contentOffset + 4),
+            Size                 = UDim2.new(1, 0, 1, -contentOffset - 4),
+            Parent               = sectionFrame,
+        })
+        local sectionLayout = Utility:CreateListLayout(sectionContent, 8)
+        Utility:CreatePadding(sectionContent, 10)
         sectionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            local contentHeight = sectionLayout.AbsoluteContentSize.Y + 24
-            sectionFrame.Size = UDim2.new(1, -0, 0, contentOffset + contentHeight)
-            sectionContent.Size = UDim2.new(1, 0, 0, contentHeight)
+            local h = sectionLayout.AbsoluteContentSize.Y + 20
+            sectionFrame.Size = UDim2.new(1, -6, 0, contentOffset + 4 + h)
+            sectionContent.Size = UDim2.new(1, 0, 0, h)
         end)
 
         local Section = {
-            Name = sectionName,
-            Frame = sectionFrame,
+            Name    = sectionName,
+            Frame   = sectionFrame,
             Content = sectionContent,
-            Tab = self,
-            Elements = {}
+            Tab     = self,
+            Elements= {},
         }
-        
-        -- Proxy functions to Window to create elements inside sectionContent
-        function Section:AddButton(config) return self.Tab.Window:CreateButton(config, self.Content, self.Tab.Color) end
-        function Section:AddToggle(config) return self.Tab.Window:CreateToggle(config, self.Content, self.Tab.Color) end
-        function Section:AddSlider(config) return self.Tab.Window:CreateSlider(config, self.Content, self.Tab.Color) end
-        function Section:AddInput(config) return self.Tab.Window:CreateInput(config, self.Content, self.Tab.Color) end
-        function Section:AddDropdown(config) return self.Tab.Window:CreateDropdown(config, self.Content, self.Tab.Color) end
-        function Section:AddParagraph(config) return self.Tab.Window:CreateParagraph(config, self.Content) end
-        function Section:AddKeybind(config) return self.Tab.Window:CreateKeybind(config, self.Content, self.Tab.Color) end
-        function Section:AddColorpicker(config) return self.Tab.Window:CreateColorpicker(config, self.Content, self.Tab.Color) end
-        -- ... add other element proxy functions here
-        
+        table.insert(self.Sections, Section)
+        table.insert(self.Window.Elements, Section)
+
+        function Section:AddButton(c)     return self.Tab.Window:CreateButton(c, self.Content)      end
+        function Section:AddToggle(c)     return self.Tab.Window:CreateToggle(c, self.Content)      end
+        function Section:AddSlider(c)     return self.Tab.Window:CreateSlider(c, self.Content)      end
+        function Section:AddInput(c)      return self.Tab.Window:CreateInput(c, self.Content)       end
+        function Section:AddDropdown(c)   return self.Tab.Window:CreateDropdown(c, self.Content)    end
+        function Section:AddParagraph(c)  return self.Tab.Window:CreateParagraph(c, self.Content)   end
+        function Section:AddKeybind(c)    return self.Tab.Window:CreateKeybind(c, self.Content)     end
+        function Section:AddColorpicker(c)return self.Tab.Window:CreateColorpicker(c, self.Content) end
+        function Section:AddCode(c)       return self.Tab.Window:CreateCode(c, self.Content)        end
+        function Section:AddAdvanced(c)   return self.Tab.Window:CreateAdvanced(c, self.Content)    end
+        function Section:AddDivider(c)    return self.Tab.Window:CreateDivider(c, self.Content)     end
         return Section
     end
 
+    function Tab:AddButton(c)     return self.Window:CreateButton(c, self.Content)      end
+    function Tab:AddToggle(c)     return self.Window:CreateToggle(c, self.Content)      end
+    function Tab:AddSlider(c)     return self.Window:CreateSlider(c, self.Content)      end
+    function Tab:AddInput(c)      return self.Window:CreateInput(c, self.Content)       end
+    function Tab:AddDropdown(c)   return self.Window:CreateDropdown(c, self.Content)    end
+    function Tab:AddParagraph(c)  return self.Window:CreateParagraph(c, self.Content)   end
+    function Tab:AddKeybind(c)    return self.Window:CreateKeybind(c, self.Content)     end
+    function Tab:AddColorpicker(c)return self.Window:CreateColorpicker(c, self.Content) end
+    function Tab:AddCode(c)       return self.Window:CreateCode(c, self.Content)        end
+    function Tab:AddAdvanced(c)   return self.Window:CreateAdvanced(c, self.Content)    end
+    function Tab:AddDivider(c)    return self.Window:CreateDivider(c, self.Content)     end
+    function Tab:AddSection(c)    return Tab.AddSection(self, c)                        end -- alias
     return Tab
 end
 
+-- ─── SelectTab ────────────────────────────────────
 function KimiUI:SelectTab(tab)
     if self.ActiveTab == tab then return end
-    
     if self.ActiveTab then
-        Utility:Tween(self.ActiveTab.Button, {BackgroundTransparency = 1}, 0.2)
-        Utility:Tween(self.ActiveTab.Indicator, {Size = UDim2.new(0, 0, 0, 20)}, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-        self.ActiveTab.IndicGlow.Enabled = false
-        self.ActiveTab.Content.Visible = false
-        if self.ActiveTab.Icon then Utility:Tween(self.ActiveTab.Icon, {ImageColor3 = self.Theme.TextDark}, 0.2) end
-        Utility:Tween(self.ActiveTab.TabText, {TextColor3 = self.Theme.TextDark}, 0.2)
+        local prev = self.ActiveTab
+        Utility:Tween(prev.Button, { BackgroundColor3 = self.Theme.Secondary, BackgroundTransparency = 0.4 }, 0.25)
+        Utility:Tween(prev.Indicator, { Size = UDim2.new(0, 4, 0, 0), Position = UDim2.new(0, 0, 0.5, 0) }, 0.25)
+        local prevGlow = prev.Button:FindFirstChild("IndicatorGlow")
+        if prevGlow then Utility:Tween(prevGlow, { Size = UDim2.new(0, 10, 0, 0) }, 0.25) end
+        local prevActiveGrad = prev.Button:FindFirstChild("ActiveGradient")
+        if prevActiveGrad then Utility:Tween(prevActiveGrad, { BackgroundTransparency = 1 }, 0.25) end
+        prev.Content.Visible = false
+        local prevIcon = prev.Button:FindFirstChild("Icon", true)
+        if prevIcon then Utility:Tween(prevIcon, { ImageColor3 = self.Theme.TextDark }, 0.25) end
+        local prevText = prev.Button:FindFirstChild("Text")
+        if prevText then Utility:Tween(prevText, { TextColor3 = self.Theme.TextDark }, 0.25) end
     end
+
     self.ActiveTab = tab
-    Utility:Tween(tab.Button, {BackgroundTransparency = 0.7, BackgroundColor3 = self.Theme.Foreground}, 0.2)
-    -- Indicator animation (pill expansion)
-    Utility:Tween(tab.Indicator, {Size = UDim2.new(0, 4, 0, 20)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    tab.IndicGlow.Enabled = true
+    Utility:Tween(tab.Button, { BackgroundColor3 = self.Theme.Foreground, BackgroundTransparency = 0 }, 0.25)
+    Utility:Tween(tab.Indicator, { Size = UDim2.new(0, 4, 1, -16), Position = UDim2.new(0, 0, 0, 8) }, 0.25, Enum.EasingStyle.Back)
+    local activeGlow = tab.Button:FindFirstChild("IndicatorGlow")
+    if activeGlow then Utility:Tween(activeGlow, { Size = UDim2.new(0, 14, 1, -16), Position = UDim2.new(0, 0, 0, 8) }, 0.25) end
+    local activeGrad = tab.Button:FindFirstChild("ActiveGradient")
+    if activeGrad then Utility:Tween(activeGrad, { BackgroundTransparency = 0.88 }, 0.25) end
     tab.Content.Visible = true
-    if tab.Icon then Utility:Tween(tab.Icon, {ImageColor3 = tab.Color}, 0.2) end
-    Utility:Tween(tab.TabText, {TextColor3 = self.Theme.Text}, 0.2)
+    local tabIcon = tab.Button:FindFirstChild("Icon", true)
+    if tabIcon then Utility:Tween(tabIcon, { ImageColor3 = tab.Color }, 0.25) end
+    local tabText = tab.Button:FindFirstChild("Text")
+    if tabText then Utility:Tween(tabText, { TextColor3 = self.Theme.Text }, 0.25) end
 end
 
---// ==============================================================================
---// PREMIUM ELEMENTS CREATION (Inside Window class to access theme)
---// ==============================================================================
+-- ═══════════════════════════════════════════════════
+--  ELEMENTS
+-- ═══════════════════════════════════════════════════
 
---// Button Element (Modern Styles with Glow)
-function KimiUI:CreateButton(config, parent, tabColor)
+-- ─── Button ───────────────────────────────────────
+function KimiUI:CreateButton(config, parent)
     config = config or {}
-    local buttonText = config.Name or config.Text or "Button"
-    local callback = config.Callback or function() end
-    local buttonStyle = config.Style or "Primary" -- Primary (Glow), Secondary, Outline, Ghost, Danger (Glow Red)
-    local icon = config.Icon or nil
+    local buttonText  = config.Name or config.Text or "Button"
+    local callback    = config.Callback or function() end
+    local buttonStyle = config.Style or "Primary"
+    local buttonSize  = config.Size or UDim2.new(1, 0, 0, 40)
+    local icon        = config.Icon or nil
 
-    local bgColor, textColor, strokeColor, glowColor
+    local bgColor, textColor
     if buttonStyle == "Primary" then
-        bgColor = tabColor or self.Theme.Accent; textColor = Color3.fromRGB(10, 10, 15); glowColor = bgColor
+        bgColor = self.Theme.Accent; textColor = Color3.fromRGB(255, 255, 255)
     elseif buttonStyle == "Secondary" then
         bgColor = self.Theme.Foreground; textColor = self.Theme.Text
     elseif buttonStyle == "Outline" then
-        bgColor = Color3.fromRGB(0,0,0); textColor = tabColor or self.Theme.Accent; strokeColor = textColor; glowColor = textColor
+        bgColor = self.Theme.Secondary; textColor = self.Theme.Text
     elseif buttonStyle == "Ghost" then
         bgColor = self.Theme.Secondary; textColor = self.Theme.TextDark
     elseif buttonStyle == "Danger" then
-        bgColor = self.Theme.Error; textColor = Color3.fromRGB(255, 255, 255); glowColor = bgColor
+        bgColor = self.Theme.Error; textColor = Color3.fromRGB(255, 255, 255)
     else
-        bgColor = tabColor or self.Theme.Accent; textColor = Color3.fromRGB(255, 255, 255)
+        bgColor = self.Theme.Accent; textColor = Color3.fromRGB(255, 255, 255)
     end
 
     local buttonFrame = Utility:Create("TextButton", {
-        Name = buttonText .. "Button",
-        BackgroundColor3 = bgColor,
-        BackgroundTransparency = (buttonStyle == "Ghost" and 1 or (buttonStyle == "Outline" and 1 or 0)),
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 38), -- Taller buttons
-        AutoButtonColor = false,
-        Font = Enum.Font.GothamSemibold,
-        Text = buttonText,
-        TextColor3 = textColor,
-        TextSize = 14,
-        Parent = parent
+        Name                 = buttonText .. "Button",
+        BackgroundColor3     = bgColor,
+        BackgroundTransparency = buttonStyle == "Ghost" and 0.88 or 0,
+        BorderSizePixel      = 0,
+        Size                 = buttonSize,
+        AutoButtonColor      = false,
+        Font                 = Enum.Font.GothamBold,
+        Text                 = buttonText,
+        TextColor3           = textColor,
+        TextSize             = 14,
+        Parent               = parent,
     })
     Utility:CreateCorner(buttonFrame, 10)
-    Utility:CreateRipple(buttonFrame, buttonStyle == "Primary" and Color3.fromRGB(255,255,255) or nil)
 
-    -- Scale hover animation (Micro-interaction)
-    Utility:Create("UIScale", {
-        Name = "HoverScale",
-        Scale = 1,
-        Parent = buttonFrame
-    })
-
-    if buttonStyle == "Outline" and strokeColor then
-        Utility:CreateStroke(buttonFrame, strokeColor, 1.3, 0.6)
-    end
-
-    local btnGlow = nil
-    if glowColor then
-        btnGlow = Utility:CreateGlow(buttonFrame, glowColor, 0.8, 15, 0)
-        btnGlow.Enabled = false
+    -- Gradient on filled buttons
+    if buttonStyle == "Primary" then
+        Utility:CreateGradient(buttonFrame, self.Theme.AccentLight, self.Theme.AccentDark, 90)
+        -- Subtle top-edge highlight
+        Utility:Create("Frame", {
+            BackgroundColor3     = Color3.fromRGB(255, 255, 255),
+            BackgroundTransparency = 0.88,
+            BorderSizePixel      = 0,
+            Size                 = UDim2.new(1, 0, 0, 1),
+            ZIndex               = buttonFrame.ZIndex + 1,
+            Parent               = buttonFrame,
+        })
+    elseif buttonStyle == "Danger" then
+        Utility:CreateGradient(buttonFrame, Utility:Brighten(self.Theme.Error, 0.08), self.Theme.Error, 90)
+        Utility:Create("Frame", {
+            BackgroundColor3     = Color3.fromRGB(255, 255, 255),
+            BackgroundTransparency = 0.88,
+            BorderSizePixel      = 0,
+            Size                 = UDim2.new(1, 0, 0, 1),
+            ZIndex               = buttonFrame.ZIndex + 1,
+            Parent               = buttonFrame,
+        })
+    elseif buttonStyle == "Outline" then
+        Utility:CreateStroke(buttonFrame, self.Theme.Accent, 1.5, 0.55)
     end
 
     if icon then
-        local btnIcon = Utility:Create("ImageLabel", {
-            Name = "Icon",
+        Utility:Create("ImageLabel", {
+            Name                 = "Icon",
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 12, 0.5, -9),
-            Size = UDim2.new(0, 18, 0, 18),
-            Image = icon,
-            ImageColor3 = textColor,
-            Parent = buttonFrame
+            Position             = UDim2.new(0, 12, 0.5, -9),
+            Size                 = UDim2.new(0, 18, 0, 18),
+            Image                = icon,
+            ImageColor3          = textColor,
+            Parent               = buttonFrame,
         })
-        buttonFrame.Text = "   " .. buttonText -- Spacing for icon
+        buttonFrame.Text = "   " .. buttonText
         buttonFrame.TextXAlignment = Enum.TextXAlignment.Left
     end
 
+    Utility:CreateRipple(buttonFrame)
+
+    -- Hover
     buttonFrame.MouseEnter:Connect(function()
-        Utility:Tween(buttonFrame.HoverScale, {Scale = 1.03}, 0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        if btnGlow then btnGlow.Enabled = true end
-        
-        if buttonStyle == "Secondary" then
-            Utility:Tween(buttonFrame, {BackgroundColor3 = self.Theme.BorderLight}, 0.2)
-        elseif buttonStyle == "Ghost" then
-            Utility:Tween(buttonFrame, {BackgroundTransparency = 0.8, BackgroundColor3 = self.Theme.Foreground}, 0.2)
-            buttonFrame.TextColor3 = self.Theme.Text
+        if buttonStyle == "Primary" then
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.AccentLight }, 0.2)
+        elseif buttonStyle == "Danger" then
+            Utility:Tween(buttonFrame, { BackgroundColor3 = Utility:Brighten(self.Theme.Error, 0.08) }, 0.2)
+        elseif buttonStyle == "Secondary" then
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.BorderLight }, 0.2)
         elseif buttonStyle == "Outline" then
-            Utility:Tween(buttonFrame, {BackgroundTransparency = 0}, 0.2)
-            buttonFrame.TextColor3 = Color3.fromRGB(10,10,15)
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.Accent }, 0.2)
+            local stroke = buttonFrame:FindFirstChildOfClass("UIStroke")
+            if stroke then stroke.Transparency = 1 end
+            Utility:Tween(buttonFrame, { TextColor3 = Color3.fromRGB(255, 255, 255) }, 0.0)
+        elseif buttonStyle == "Ghost" then
+            Utility:Tween(buttonFrame, { BackgroundTransparency = 0.72 }, 0.2)
+            Utility:Tween(buttonFrame, { TextColor3 = self.Theme.Text }, 0.0)
         end
     end)
-
     buttonFrame.MouseLeave:Connect(function()
-        Utility:Tween(buttonFrame.HoverScale, {Scale = 1}, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        if btnGlow then btnGlow.Enabled = false end
-        
-        if buttonStyle == "Secondary" then
-            Utility:Tween(buttonFrame, {BackgroundColor3 = self.Theme.Foreground}, 0.2)
-        elseif buttonStyle == "Ghost" then
-            Utility:Tween(buttonFrame, {BackgroundTransparency = 1}, 0.2)
-            buttonFrame.TextColor3 = self.Theme.TextDark
+        if buttonStyle == "Primary" then
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.Accent }, 0.2)
+        elseif buttonStyle == "Danger" then
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.Error }, 0.2)
+        elseif buttonStyle == "Secondary" then
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.Foreground }, 0.2)
         elseif buttonStyle == "Outline" then
-            Utility:Tween(buttonFrame, {BackgroundTransparency = 1}, 0.2)
-            buttonFrame.TextColor3 = strokeColor
+            Utility:Tween(buttonFrame, { BackgroundColor3 = self.Theme.Secondary }, 0.2)
+            local stroke = buttonFrame:FindFirstChildOfClass("UIStroke")
+            if stroke then stroke.Transparency = 0.55 end
+            Utility:Tween(buttonFrame, { TextColor3 = self.Theme.Text }, 0.0)
+        elseif buttonStyle == "Ghost" then
+            Utility:Tween(buttonFrame, { BackgroundTransparency = 0.88 }, 0.2)
+            Utility:Tween(buttonFrame, { TextColor3 = self.Theme.TextDark }, 0.0)
         end
     end)
+    buttonFrame.MouseButton1Click:Connect(function() callback() end)
 
-    buttonFrame.MouseButton1Click:Connect(function() 
-        Utility:Tween(buttonFrame.HoverScale, {Scale = 0.95}, 0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, function()
-            Utility:Tween(buttonFrame.HoverScale, {Scale = 1.03}, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        end)
-        callback() 
-    end)
-
-    return { Frame = buttonFrame, Style = buttonStyle, Type = "Button" }
+    local Button = { Frame = buttonFrame, Callback = callback, Type = "Button" }
+    table.insert(self.Elements, Button)
+    return Button
 end
 
---// Toggle Element (Modern Slide Toggle with Glow)
-function KimiUI:CreateToggle(config, parent, tabColor)
+-- ─── Toggle ───────────────────────────────────────
+function KimiUI:CreateToggle(config, parent)
     config = config or {}
     local toggleName = config.Name or "Toggle"
-    local default = config.Default or false
-    local callback = config.Callback or function() end
-    local flag = config.Flag or nil
-    local icon = config.Icon or nil
-
-    local accentColor = tabColor or self.Theme.Accent
+    local default    = config.Default or false
+    local callback   = config.Callback or function() end
+    local flag       = config.Flag or nil
+    local icon       = config.Icon or nil
 
     if flag then self.Flags[flag] = default end
 
     local toggleFrame = Utility:Create("Frame", {
-        Name = toggleName .. "Toggle",
+        Name             = toggleName .. "Toggle",
         BackgroundColor3 = self.Theme.Foreground,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 48), -- Taller for spacing
-        Parent = parent
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 44),
+        Parent           = parent,
     })
     Utility:CreateCorner(toggleFrame, 10)
-    Utility:CreateStroke(toggleFrame, self.Theme.Border, 1, 0.8)
-
-    toggleFrame.MouseEnter:Connect(function() Utility:Tween(toggleFrame, {BackgroundColor3 = self.Theme.Border}, 0.2) end)
-    toggleFrame.MouseLeave:Connect(function() Utility:Tween(toggleFrame, {BackgroundColor3 = self.Theme.Foreground}, 0.2) end)
+    Utility:CreateStroke(toggleFrame, self.Theme.Border, 1, 0.88)
 
     local labelOffset = 14
     if icon then
-        local toggleIcon = Utility:Create("ImageLabel", {
-            Name = "Icon",
+        local ic = Utility:Create("ImageLabel", {
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 14, 0.5, -10),
-            Size = UDim2.new(0, 20, 0, 20),
-            Image = icon,
-            ImageColor3 = self.Theme.TextDark,
-            Parent = toggleFrame
+            Position               = UDim2.new(0, 14, 0.5, -9),
+            Size                   = UDim2.new(0, 18, 0, 18),
+            Image                  = icon,
+            ImageColor3            = self.Theme.TextDark,
+            Parent                 = toggleFrame,
         })
-        labelOffset = 42
+        labelOffset = 38
     end
 
-    local toggleLabel = Utility:Create("TextLabel", {
-        Name = "Label",
+    Utility:Create("TextLabel", {
+        Name                 = "Label",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, labelOffset, 0, 0),
-        Size = UDim2.new(1, - labelOffset - 70, 1, 0),
-        Font = Enum.Font.GothamSemibold,
-        Text = toggleName,
-        TextColor3 = self.Theme.Text,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = toggleFrame
+        Position             = UDim2.new(0, labelOffset, 0, 0),
+        Size                 = UDim2.new(1, -110, 1, 0),
+        Font                 = Enum.Font.GothamSemibold,
+        Text                 = toggleName,
+        TextColor3           = self.Theme.Text,
+        TextSize             = 14,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = toggleFrame,
     })
 
-    -- Premium Track Design
     local toggleTrack = Utility:Create("TextButton", {
-        Name = "Track",
-        BackgroundColor3 = default and accentColor or self.Theme.BorderLight,
-        BorderSizePixel = 0,
-        Position = UDim2.new(1, -64, 0.5, -13),
-        Size = UDim2.new(0, 50, 0, 26), -- Premium track size
-        AutoButtonColor = false,
-        Text = "",
-        Parent = toggleFrame
+        Name             = "Track",
+        BackgroundColor3 = default and self.Theme.Accent or self.Theme.Border,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(1, -58, 0.5, -13),
+        Size             = UDim2.new(0, 50, 0, 26),
+        AutoButtonColor  = false,
+        Text             = "",
+        Parent           = toggleFrame,
     })
-    Utility:CreateCorner(toggleTrack, 13) -- Pill shape
-    Utility:CreateStroke(toggleTrack, default and accentColor or self.Theme.BorderLight, 1, 0.5)
+    Utility:CreateCorner(toggleTrack, 13)
 
-    -- Glow for Track
-    local trackGlow = Utility:CreateGlow(toggleTrack, accentColor, 0.7, 15, 0)
-    trackGlow.Enabled = default
+    -- Gradient on track when enabled
+    local trackGradient = Utility:CreateGradient(toggleTrack, self.Theme.AccentLight, self.Theme.AccentDark, 0)
+    trackGradient.Transparency = default
+        and NumberSequence.new(0)
+        or  NumberSequence.new(1)
 
-    -- Premium Thumb Design (White with Shadow)
     local toggleThumb = Utility:Create("Frame", {
-        Name = "Thumb",
+        Name             = "Thumb",
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BorderSizePixel = 0,
-        Position = default and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11),
-        Size = UDim2.new(0, 22, 0, 22),
-        Parent = toggleTrack
+        BorderSizePixel  = 0,
+        Position         = default and UDim2.new(1, -23, 0.5, -11) or UDim2.new(0, 3, 0.5, -11),
+        Size             = UDim2.new(0, 22, 0, 22),
+        Parent           = toggleTrack,
     })
     Utility:CreateCorner(toggleThumb, 11)
-    Utility:CreateShadow(toggleThumb, 0.3, 8, 1) -- Thumb shadow for depth
+    Utility:CreateShadow(toggleThumb, 0.28, 6)
 
     local toggled = default
 
-    local function updateToggle(value)
-        toggled = value
-        if flag then self.Flags[flag] = toggled end
-        
-        local targetPos = toggled and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
-        local targetColor = toggled and accentColor or self.Theme.BorderLight
-        
-        trackGlow.Enabled = toggled
-        Utility:Tween(toggleTrack, {BackgroundColor3 = targetColor}, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        Utility:Tween(toggleTrack:FindFirstChildOfClass("UIStroke"), {Color = targetColor}, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        Utility:Tween(toggleThumb, {Position = targetPos}, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        
-        callback(toggled)
-    end
-
     toggleTrack.MouseButton1Click:Connect(function()
-        updateToggle(not toggled)
-    end)
-    
-    -- Label click also toggles
-    Utility:Create("TextButton", {
-        Name = "LabelClick",
-        BackgroundTransparency = 1,
-        Size = toggleLabel.Size,
-        Position = toggleLabel.Position,
-        Text = "",
-        Parent = toggleFrame
-    }).MouseButton1Click:Connect(function()
-        updateToggle(not toggled)
+        toggled = not toggled
+        if flag then self.Flags[flag] = toggled end
+
+        Utility:Tween(toggleTrack, { BackgroundColor3 = toggled and self.Theme.Accent or self.Theme.Border }, 0.3, Enum.EasingStyle.Quart)
+        Utility:Tween(toggleThumb, { Position = toggled and UDim2.new(1, -23, 0.5, -11) or UDim2.new(0, 3, 0.5, -11) }, 0.3, Enum.EasingStyle.Quart)
+
+        -- Animate gradient
+        trackGradient.Transparency = toggled
+            and NumberSequence.new(0)
+            or  NumberSequence.new(1)
+
+        callback(toggled)
     end)
 
     local Toggle = {
         Frame = toggleFrame,
         Value = toggled,
-        Set = function(self, value) updateToggle(value) end,
-        Type = "Toggle"
+        Set = function(_, value)
+            toggled = value
+            if flag then KimiUI.CurrentWindow.Flags[flag] = toggled end
+            local theme = KimiUI.CurrentWindow.Theme
+            Utility:Tween(toggleTrack, { BackgroundColor3 = toggled and theme.Accent or theme.Border }, 0.3)
+            Utility:Tween(toggleThumb, { Position = toggled and UDim2.new(1, -23, 0.5, -11) or UDim2.new(0, 3, 0.5, -11) }, 0.3)
+            trackGradient.Transparency = toggled and NumberSequence.new(0) or NumberSequence.new(1)
+            callback(toggled)
+        end,
+        Type = "Toggle",
     }
     table.insert(self.Elements, Toggle)
     return Toggle
 end
 
---// Slider Element (Premium Modern Style)
-function KimiUI:CreateSlider(config, parent, tabColor)
+-- ─── Slider ───────────────────────────────────────
+function KimiUI:CreateSlider(config, parent)
     config = config or {}
     local sliderName = config.Name or "Slider"
-    local min = config.Min or config.Minimum or 0
-    local max = config.Max or config.Maximum or 100
-    local default = config.Default or min
-    local increment = config.Increment or config.Step or 1
-    local suffix = config.Suffix or config.Postfix or ""
-    local callback = config.Callback or function() end
-    local flag = config.Flag or nil
-
-    local accentColor = tabColor or self.Theme.Accent
+    local min        = config.Min or config.Minimum or 0
+    local max        = config.Max or config.Maximum or 100
+    local default    = config.Default or min
+    local increment  = config.Increment or config.Step or 1
+    local suffix     = config.Suffix or config.Postfix or ""
+    local callback   = config.Callback or function() end
+    local flag       = config.Flag or nil
 
     default = math.clamp(default, min, max)
     if flag then self.Flags[flag] = default end
 
     local sliderFrame = Utility:Create("Frame", {
-        Name = sliderName .. "Slider",
+        Name             = sliderName .. "Slider",
         BackgroundColor3 = self.Theme.Foreground,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 72), -- Taller for design
-        Parent = parent
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 64),
+        Parent           = parent,
     })
     Utility:CreateCorner(sliderFrame, 10)
-    Utility:CreateStroke(sliderFrame, self.Theme.Border, 1, 0.8)
+    Utility:CreateStroke(sliderFrame, self.Theme.Border, 1, 0.88)
 
-    local sliderLabel = Utility:Create("TextLabel", {
-        Name = "Label",
+    Utility:Create("TextLabel", {
+        Name                 = "Label",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 16, 0, 10),
-        Size = UDim2.new(1, -110, 0, 22),
-        Font = Enum.Font.GothamSemibold,
-        Text = sliderName,
-        TextColor3 = self.Theme.Text,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = sliderFrame
+        Position             = UDim2.new(0, 14, 0, 9),
+        Size                 = UDim2.new(1, -100, 0, 20),
+        Font                 = Enum.Font.GothamSemibold,
+        Text                 = sliderName,
+        TextColor3           = self.Theme.Text,
+        TextSize             = 14,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = sliderFrame,
     })
-
-    -- Value box premium design
-    local valueFrame = Utility:Create("Frame", {
-        Name = "ValueFrame",
-        BackgroundColor3 = self.Theme.Secondary,
-        Position = UDim2.new(1, -90, 0, 10),
-        Size = UDim2.new(0, 74, 0, 26),
-        Parent = sliderFrame
-    })
-    Utility:CreateCorner(valueFrame, 6)
-    Utility:CreateStroke(valueFrame, self.Theme.Border, 1, 0.7)
 
     local valueLabel = Utility:Create("TextLabel", {
-        Name = "Value",
+        Name                 = "Value",
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, 0),
-        Font = Enum.Font.GothamBold,
-        Text = tostring(default) .. suffix,
-        TextColor3 = accentColor,
-        TextSize = 13,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        Parent = valueFrame
+        Position             = UDim2.new(1, -88, 0, 9),
+        Size                 = UDim2.new(0, 78, 0, 20),
+        Font                 = Enum.Font.GothamBlack,
+        Text                 = tostring(default) .. suffix,
+        TextColor3           = self.Theme.AccentLight,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Right,
+        Parent               = sliderFrame,
     })
 
-    -- Premium Slider Track Design
-    local sliderBackground = Utility:Create("Frame", {
-        Name = "Track",
-        BackgroundColor3 = self.Theme.Secondary,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 16, 0, 48), -- Lower position
-        Size = UDim2.new(1, -32, 0, 8), -- Slightly thicker track
-        Parent = sliderFrame
+    -- Track background
+    local trackBg = Utility:Create("Frame", {
+        Name             = "TrackBg",
+        BackgroundColor3 = self.Theme.Border,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 14, 0, 40),
+        Size             = UDim2.new(1, -28, 0, 8),
+        Parent           = sliderFrame,
     })
-    Utility:CreateCorner(sliderBackground, 4)
-    Utility:CreateStroke(sliderBackground, self.Theme.BorderLight, 1, 0.8)
+    Utility:CreateCorner(trackBg, 4)
 
     local sliderFill = Utility:Create("Frame", {
-        Name = "Fill",
-        BackgroundColor3 = accentColor,
-        BorderSizePixel = 0,
-        Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
-        Parent = sliderBackground
+        Name             = "Fill",
+        BackgroundColor3 = self.Theme.Accent,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new((default - min) / (max - min), 0, 1, 0),
+        Parent           = trackBg,
     })
     Utility:CreateCorner(sliderFill, 4)
-    local fillGlow = Utility:CreateGlow(sliderFill, accentColor, 0.7, 12, 0)
+    -- Gradient fill (dark → light, left to right)
+    Utility:CreateGradient(sliderFill, self.Theme.AccentDark, self.Theme.AccentLight, 0)
 
-    -- Sophisticated Thumb Design (White with border and shadow)
     local sliderThumb = Utility:Create("Frame", {
-        Name = "Thumb",
+        Name             = "Thumb",
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BorderSizePixel = 0,
-        Position = UDim2.new((default - min) / (max - min), -10, 0.5, -10), -- Center
-        Size = UDim2.new(0, 20, 0, 20),
-        ZIndex = 2,
-        Parent = sliderBackground
+        BorderSizePixel  = 0,
+        AnchorPoint      = Vector2.new(0.5, 0.5),
+        Position         = UDim2.new((default - min) / (max - min), 0, 0.5, 0),
+        Size             = UDim2.new(0, 20, 0, 20),
+        ZIndex           = 2,
+        Parent           = trackBg,
     })
     Utility:CreateCorner(sliderThumb, 10)
-    Utility:CreateStroke(sliderThumb, accentColor, 2, 0.5) -- Accent border on thumb
-    Utility:CreateShadow(sliderThumb, 0.35, 10, 2) -- Shadow for depth
-
-    sliderFrame.MouseEnter:Connect(function() Utility:Tween(sliderFrame, {BackgroundColor3 = self.Theme.Border}, 0.2) end)
-    sliderFrame.MouseLeave:Connect(function() Utility:Tween(sliderFrame, {BackgroundColor3 = self.Theme.Foreground}, 0.2) end)
+    Utility:CreateShadow(sliderThumb, 0.22, 5)
+    -- Accent-colored inner dot
+    local thumbDot = Utility:Create("Frame", {
+        AnchorPoint          = Vector2.new(0.5, 0.5),
+        BackgroundColor3     = self.Theme.Accent,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0.5, 0, 0.5, 0),
+        Size                 = UDim2.new(0, 8, 0, 8),
+        ZIndex               = 3,
+        Parent               = sliderThumb,
+    })
+    Utility:CreateCorner(thumbDot, 4)
 
     local dragging = false
     local function updateSlider(input)
-        local pos = math.clamp((input.Position.X - sliderBackground.AbsolutePosition.X) / sliderBackground.AbsoluteSize.X, 0, 1)
+        local pos   = math.clamp((input.Position.X - trackBg.AbsolutePosition.X) / trackBg.AbsoluteSize.X, 0, 1)
         local value = min + (max - min) * pos
         value = math.floor(value / increment + 0.5) * increment
-        value = Utility:RoundNumber(value, #tostring(increment) - 2) -- Handle decimal increments
+        value = Utility:RoundNumber(value, #tostring(increment) - 2)
         value = math.clamp(value, min, max)
-        
-        local fillSize = (value - min) / (max - min)
-        sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-        sliderThumb.Position = UDim2.new(fillSize, -10, 0.5, -10)
-        valueLabel.Text = tostring(value) .. suffix
-        
+        local fillPct = (value - min) / (max - min)
+        sliderFill.Size      = UDim2.new(fillPct, 0, 1, 0)
+        sliderThumb.Position = UDim2.new(fillPct, 0, 0.5, 0)
+        valueLabel.Text      = tostring(value) .. suffix
         if flag then self.Flags[flag] = value end
         callback(value)
     end
 
-    sliderBackground.InputBegan:Connect(function(input)
+    trackBg.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             updateSlider(input)
-            Utility:Tween(sliderThumb, {Size = UDim2.new(0, 24, 0, 24), Position = sliderThumb.Position - UDim2.new(0, 2, 0, 2)}, 0.15) -- Scale thumb up
+            Utility:Tween(sliderThumb, { Size = UDim2.new(0, 24, 0, 24) }, 0.15, Enum.EasingStyle.Back)
+        end
+    end)
+    sliderThumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            Utility:Tween(sliderThumb, { Size = UDim2.new(0, 24, 0, 24) }, 0.15, Enum.EasingStyle.Back)
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
@@ -1143,10 +1479,10 @@ function KimiUI:CreateSlider(config, parent, tabColor)
     end)
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if dragging then
+                Utility:Tween(sliderThumb, { Size = UDim2.new(0, 20, 0, 20) }, 0.15, Enum.EasingStyle.Back)
+            end
             dragging = false
-            -- Sophisticated Scale thumb down animation
-            local currentFillSize = sliderFill.Size.X.Scale
-            Utility:Tween(sliderThumb, {Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(currentFillSize, -10, 0.5, -10)}, 0.2)
         end
     end)
 
@@ -1154,415 +1490,1617 @@ function KimiUI:CreateSlider(config, parent, tabColor)
         Frame = sliderFrame,
         Value = default,
         Set = function(_, value)
-            value = math.clamp(value, min, max)
-            value = math.floor(value / increment + 0.5) * increment
-            local fillSize = (value - min) / (max - min)
-            sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-            sliderThumb.Position = UDim2.new(fillSize, -10, 0.5, -10)
-            valueLabel.Text = tostring(value) .. suffix
+            value = math.clamp(math.floor(value / increment + 0.5) * increment, min, max)
+            local fillPct = (value - min) / (max - min)
+            sliderFill.Size      = UDim2.new(fillPct, 0, 1, 0)
+            sliderThumb.Position = UDim2.new(fillPct, 0, 0.5, 0)
+            valueLabel.Text      = tostring(value) .. suffix
             if flag then KimiUI.CurrentWindow.Flags[flag] = value end
             callback(value)
         end,
-        Type = "Slider"
+        Type = "Slider",
     }
     table.insert(self.Elements, Slider)
     return Slider
 end
 
---// Notification System (Premium Modern)
-function KimiUI:Notify(config)
+-- ─── Input ────────────────────────────────────────
+function KimiUI:CreateInput(config, parent)
     config = config or {}
-    local notifyTitle = config.Title or "Notification"
-    local notifyContent = config.Content or config.Message or config.Text or "..."
-    local notifyType = config.Type or "Info" -- Info, Success, Warning, Error
-    local duration = config.Duration or 6
+    local inputName  = config.Name or "Input"
+    local placeholder= config.Placeholder or "Enter text..."
+    local default    = config.Default or ""
+    local callback   = config.Callback or function() end
+    local inputType  = config.Type or "Default"
+    local flag       = config.Flag or nil
+    local icon       = config.Icon or nil
 
-    -- Container for notifications if not exist
-    if not KimiUI.NotificationGui then
-        KimiUI.NotificationGui = Utility:Create("ScreenGui", {
-            Name = "KimiUINotifications",
-            ResetOnSpawn = false,
-            ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-            Parent = syn and syn.protect_gui and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+    if flag then self.Flags[flag] = default end
+
+    local inputFrame = Utility:Create("Frame", {
+        Name             = inputName .. "Input",
+        BackgroundColor3 = self.Theme.Foreground,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 72),
+        Parent           = parent,
+    })
+    Utility:CreateCorner(inputFrame, 10)
+    Utility:CreateStroke(inputFrame, self.Theme.Border, 1, 0.88)
+
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 14, 0, 8),
+        Size                   = UDim2.new(1, -28, 0, 20),
+        Font                   = Enum.Font.GothamSemibold,
+        Text                   = inputName,
+        TextColor3             = self.Theme.Text,
+        TextSize               = 14,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        Parent                 = inputFrame,
+    })
+
+    local boxOffset = 14
+    local boxWidth  = -28
+    if icon then
+        Utility:Create("ImageLabel", {
+            BackgroundTransparency = 1,
+            Position               = UDim2.new(0, 14, 0, 36),
+            Size                   = UDim2.new(0, 16, 0, 16),
+            Image                  = icon,
+            ImageColor3            = self.Theme.TextDark,
+            Parent                 = inputFrame,
         })
-        if syn and syn.protect_gui then syn.protect_gui(KimiUI.NotificationGui) end
+        boxOffset = 38; boxWidth = -52
     end
 
-    local typeColors = {
-        Info = self.Theme.Info,
-        Success = self.Theme.Success,
-        Warning = self.Theme.Warning,
-        Error = self.Theme.Error
-    }
-    local typeIcons = {
-        Info = "rbxassetid://10734946868", -- Blue info
-        Success = "rbxassetid://10734946395", -- Green check
-        Warning = "rbxassetid://10734947962", -- Yellow warn
-        Error = "rbxassetid://10734947573" -- Red x
-    }
-    local typeColor = typeColors[notifyType] or self.Theme.Info
-
-    local notificationFrame = Utility:Create("Frame", {
-        Name = "Notification",
-        BackgroundColor3 = self.Theme.Secondary,
-        BackgroundTransparency = 0.1, -- Acrylic base
-        BorderSizePixel = 0,
-        Position = UDim2.new(1, 20, 1, -20), -- Start offscreen bottom right
-        AnchorPoint = Vector2.new(0, 1),
-        Size = UDim2.new(0, 340, 0, 0), -- Canvas size auto update y
-        ClipsDescendants = false,
-        Parent = KimiUI.NotificationGui
+    local inputBox = Utility:Create("TextBox", {
+        Name                 = "InputBox",
+        BackgroundColor3     = self.Theme.Primary,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, boxOffset, 0, 34),
+        Size                 = UDim2.new(1, boxWidth, 0, 30),
+        Font                 = Enum.Font.Gotham,
+        Text                 = default,
+        TextColor3           = self.Theme.Text,
+        PlaceholderText      = placeholder,
+        PlaceholderColor3    = self.Theme.TextDarker,
+        TextSize             = 13,
+        ClearTextOnFocus     = false,
+        Parent               = inputFrame,
     })
-    Utility:CreateCorner(notificationFrame, 12)
-    Utility:CreateShadow(notificationFrame, 0.45, 25, 8) -- Major window shadow
-    Utility:CreateStroke(notificationFrame, self.Theme.Border, 1.2, 0.7)
-    
-    -- Glow based on type
-    local notifyGlow = Utility:CreateGlow(notificationFrame, typeColor, 0.8, 25, 0)
+    Utility:CreateCorner(inputBox, 7)
+    Utility:CreatePadding(inputBox, 10)
 
-    -- Left accent bar pilled
-    local colorBar = Utility:Create("Frame", {
-        Name = "ColorBar",
-        BackgroundColor3 = typeColor,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        Size = UDim2.new(0, 4, 0, 40), -- Pill shape center
-        Parent = notificationFrame
-    })
-    Utility:CreateCorner(colorBar, 4)
+    local focusStroke = Utility:CreateStroke(inputBox, self.Theme.Accent, 2, 1)
 
-    local icon = Utility:Create("ImageLabel", {
-        Name = "Icon",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 20, 0, 18),
-        Size = UDim2.new(0, 26, 0, 26),
-        Image = typeIcons[notifyType] or typeIcons.Info,
-        ImageColor3 = typeColor,
-        Parent = notificationFrame
-    })
-    local iconGlow = Utility:CreateGlow(icon, typeColor, 0.7, 10, 0)
-
-    local titleLabel = Utility:Create("TextLabel", {
-        Name = "Title",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 56, 0, 18),
-        Size = UDim2.new(1, -90, 0, 24),
-        Font = Enum.Font.GothamBold,
-        Text = notifyTitle,
-        TextColor3 = self.Theme.Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = notificationFrame
-    })
-
-    local contentLabel = Utility:Create("TextLabel", {
-        Name = "Content",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 56, 0, 44),
-        Size = UDim2.new(1, -66, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        Font = Enum.Font.Gotham,
-        Text = notifyContent,
-        TextColor3 = self.Theme.TextDark,
-        TextSize = 13,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextWrapped = true,
-        Parent = notificationFrame
-    })
-
-    -- Premium close button design
-    local closeBtn = Utility:Create("TextButton", {
-        Name = "Close",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(1, -30, 0, 10),
-        Size = UDim2.new(0, 20, 0, 20),
-        Font = Enum.Font.GothamBold,
-        Text = "×",
-        TextColor3 = self.Theme.TextDarker,
-        TextSize = 18,
-        Parent = notificationFrame
-    })
-    closeBtn.MouseEnter:Connect(function() Utility:Tween(closeBtn, {TextColor3 = theme.Error}, 0.2) end)
-    closeBtn.MouseLeave:Connect(function() Utility:Tween(closeBtn, {TextColor3 = theme.TextDarker}, 0.2) end)
-
-    -- Premium time bar design (Bottom gradient)
-    local timeBar = Utility:Create("Frame", {
-        Name = "TimeBar",
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 10, 1, -4), -- Bottom
-        Size = UDim2.new(1, -20, 0, 2),
-        Parent = notificationFrame
-    }, {
-        Utility:Create("UIGradient", {
-            Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, self.Theme.Secondary),
-                ColorSequenceKeypoint.new(0.5, typeColor),
-                ColorSequenceKeypoint.new(1, self.Theme.Secondary)
-            })
-        }),
-        Utility:CreateCorner(nil, 2)
-    })
-
-    -- Auto Height Update
-    local currentHeight = 0
-    contentLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-        task.wait() -- Allow text wrapping to calculate
-        local newHeight = contentLabel.AbsoluteSize.Y + 65 -- base padding
-        currentHeight = math.max(newHeight, 80) -- Min height
-        notificationFrame.Size = UDim2.new(0, 340, 0, currentHeight)
+    inputBox.Focused:Connect(function()
+        Utility:Tween(focusStroke, { Transparency = 0.25 }, 0.2)
+        Utility:Tween(inputBox, { BackgroundColor3 = self.Theme.Background }, 0.2)
     end)
-    -- Initial update
-    task.spawn(function()
-        task.wait(0.1)
-        local newHeight = contentLabel.AbsoluteSize.Y + 65
-        currentHeight = math.max(newHeight, 80)
-        notificationFrame.Size = UDim2.new(0, 340, 0, currentHeight)
+    inputBox.FocusLost:Connect(function(enterPressed)
+        Utility:Tween(focusStroke, { Transparency = 1 }, 0.2)
+        Utility:Tween(inputBox, { BackgroundColor3 = self.Theme.Primary }, 0.2)
+        local text = inputBox.Text
+        if flag then self.Flags[flag] = text end
+        callback(text, enterPressed)
     end)
 
-    local function closeNotify()
-        Utility:Tween(notificationFrame, {Position = UDim2.new(1, 20, notificationFrame.Position.Y.Scale, notificationFrame.Position.Y.Offset), BackgroundTransparency = 1}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In, function()
-            notificationFrame:Destroy()
-            -- Rearrange remaining notifications (advanced feature can be added here)
+    local Input = {
+        Frame    = inputFrame,
+        InputBox = inputBox,
+        Value    = default,
+        Set = function(_, value)
+            inputBox.Text = value
+            if flag then KimiUI.CurrentWindow.Flags[flag] = value end
+        end,
+        Type = "Input",
+    }
+    table.insert(self.Elements, Input)
+    return Input
+end
+
+-- ─── Dropdown ─────────────────────────────────────
+function KimiUI:CreateDropdown(config, parent)
+    config = config or {}
+    local dropdownName = config.Name or "Dropdown"
+    local options      = config.Options or config.Values or {}
+    local default      = config.Default or config.Value or (options[1] or "")
+    local callback     = config.Callback or function() end
+    local multiSelect  = config.MultiSelect or false
+    local flag         = config.Flag or nil
+
+    if flag then self.Flags[flag] = multiSelect and {default} or default end
+
+    local dropdownFrame = Utility:Create("Frame", {
+        Name             = dropdownName .. "Dropdown",
+        BackgroundColor3 = self.Theme.Foreground,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 72),
+        ClipsDescendants = true,
+        Parent           = parent,
+    })
+    Utility:CreateCorner(dropdownFrame, 10)
+    Utility:CreateStroke(dropdownFrame, self.Theme.Border, 1, 0.88)
+
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 14, 0, 8),
+        Size                   = UDim2.new(1, -28, 0, 20),
+        Font                   = Enum.Font.GothamSemibold,
+        Text                   = dropdownName,
+        TextColor3             = self.Theme.Text,
+        TextSize               = 14,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        Parent                 = dropdownFrame,
+    })
+
+    local dropdownButton = Utility:Create("TextButton", {
+        Name                 = "DropdownButton",
+        BackgroundColor3     = self.Theme.Primary,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 14, 0, 34),
+        Size                 = UDim2.new(1, -28, 0, 30),
+        AutoButtonColor      = false,
+        Font                 = Enum.Font.Gotham,
+        Text                 = (default ~= "" and tostring(default)) or "Select...",
+        TextColor3           = self.Theme.Text,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = dropdownFrame,
+    })
+    Utility:CreateCorner(dropdownButton, 7)
+    Utility:CreatePadding(dropdownButton, 10)
+
+    local arrowIcon = Utility:Create("ImageLabel", {
+        Name                 = "Arrow",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(1, -28, 0, 5),
+        Size                 = UDim2.new(0, 18, 0, 18),
+        Image                = "rbxassetid://7072706663",
+        ImageColor3          = self.Theme.Accent,
+        Parent               = dropdownButton,
+    })
+
+    local optionsFrame = Utility:Create("Frame", {
+        Name             = "Options",
+        BackgroundColor3 = self.Theme.Primary,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 14, 0, 70),
+        Size             = UDim2.new(1, -28, 0, 0),
+        ClipsDescendants = true,
+        Visible          = false,
+        Parent           = dropdownFrame,
+    })
+    Utility:CreateCorner(optionsFrame, 8)
+    Utility:CreateStroke(optionsFrame, self.Theme.Border, 1, 0.75)
+
+    local optionsLayout = Utility:CreateListLayout(optionsFrame, 3)
+    Utility:CreatePadding(optionsFrame, 6)
+
+    local selectedValues = multiSelect and {default} or default
+    local isOpen = false
+
+    local function toggleDropdown()
+        isOpen = not isOpen
+        if isOpen then
+            optionsFrame.Visible = true
+            local totalHeight = math.min(#options * 33 + 12, 180)
+            Utility:Tween(dropdownFrame, { Size = UDim2.new(1, 0, 0, 78 + totalHeight) }, 0.3, Enum.EasingStyle.Quart)
+            Utility:Tween(optionsFrame, { Size = UDim2.new(1, -28, 0, totalHeight) }, 0.3, Enum.EasingStyle.Quart)
+            Utility:Tween(arrowIcon, { Rotation = 180 }, 0.3, Enum.EasingStyle.Quart)
+        else
+            Utility:Tween(dropdownFrame, { Size = UDim2.new(1, 0, 0, 72) }, 0.3, Enum.EasingStyle.Quart)
+            Utility:Tween(optionsFrame, { Size = UDim2.new(1, -28, 0, 0) }, 0.3, Enum.EasingStyle.Quart)
+            Utility:Tween(arrowIcon, { Rotation = 0 }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, function()
+                optionsFrame.Visible = false
+            end)
+        end
+    end
+    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+
+    for _, option in pairs(options) do
+        local optionButton = Utility:Create("TextButton", {
+            Name             = tostring(option) .. "Option",
+            BackgroundColor3 = self.Theme.Primary,
+            BorderSizePixel  = 0,
+            Size             = UDim2.new(1, -12, 0, 30),
+            AutoButtonColor  = false,
+            Font             = Enum.Font.Gotham,
+            Text             = tostring(option),
+            TextColor3       = self.Theme.TextDark,
+            TextSize         = 13,
+            Parent           = optionsFrame,
+        })
+        Utility:CreateCorner(optionButton, 6)
+
+        local checkmark = Utility:Create("ImageLabel", {
+            Name                 = "Checkmark",
+            BackgroundTransparency = 1,
+            Position             = UDim2.new(1, -26, 0, 7),
+            Size                 = UDim2.new(0, 16, 0, 16),
+            Image                = "rbxassetid://7733973319",
+            ImageColor3          = self.Theme.Accent,
+            ImageTransparency    = 1,
+            Parent               = optionButton,
+        })
+
+        optionButton.MouseEnter:Connect(function()
+            Utility:Tween(optionButton, { BackgroundColor3 = self.Theme.Foreground, TextColor3 = self.Theme.Text }, 0.18)
+        end)
+        optionButton.MouseLeave:Connect(function()
+            Utility:Tween(optionButton, { BackgroundColor3 = self.Theme.Primary, TextColor3 = self.Theme.TextDark }, 0.18)
+        end)
+        optionButton.MouseButton1Click:Connect(function()
+            if multiSelect then
+                local idx = table.find(selectedValues, option)
+                if idx then
+                    table.remove(selectedValues, idx)
+                    Utility:Tween(checkmark, { ImageTransparency = 1 }, 0.15)
+                else
+                    table.insert(selectedValues, option)
+                    Utility:Tween(checkmark, { ImageTransparency = 0 }, 0.15)
+                end
+                dropdownButton.Text = #selectedValues > 0 and table.concat(selectedValues, ", ") or "Select..."
+            else
+                selectedValues = option
+                dropdownButton.Text = tostring(option)
+                for _, child in pairs(optionsFrame:GetChildren()) do
+                    if child:IsA("TextButton") then
+                        local cm = child:FindFirstChild("Checkmark")
+                        if cm then Utility:Tween(cm, { ImageTransparency = 1 }, 0.15) end
+                    end
+                end
+                Utility:Tween(checkmark, { ImageTransparency = 0 }, 0.15)
+                toggleDropdown()
+            end
+            if flag then self.Flags[flag] = selectedValues end
+            callback(selectedValues)
         end)
     end
 
-    closeBtn.MouseButton1Click:Connect(closeNotify)
-
-    -- elegant open animation from right
-    task.spawn(function()
-        task.wait(0.1)
-        Utility:Tween(notificationFrame, {Position = UDim2.new(1, -355, 1, -20)}, 0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        
-        -- Time bar animation shrink
-        Utility:Tween(timeBar, {Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(0.5, 0, 1, -4)}, duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-        
-        task.wait(duration)
-        if notificationFrame and notificationFrame.Parent then closeNotify() end
-    end)
+    local Dropdown = {
+        Frame = dropdownFrame, Value = selectedValues, Options = options,
+        Set = function(_, value)
+            selectedValues = value
+            dropdownButton.Text = multiSelect
+                and (#selectedValues > 0 and table.concat(selectedValues, ", ") or "Select...")
+                or  tostring(value)
+            if flag then KimiUI.CurrentWindow.Flags[flag] = selectedValues end
+            callback(selectedValues)
+        end,
+        Refresh = function(_, newOptions)
+            for _, child in pairs(optionsFrame:GetChildren()) do
+                if child:IsA("TextButton") then child:Destroy() end
+            end
+        end,
+        Type = "Dropdown",
+    }
+    table.insert(self.Elements, Dropdown)
+    return Dropdown
 end
 
---// dialog, input, dropdown... can be added here following same premium aesthetic.
---// Paragraph Element (Premium Modern Style)
+-- ─── Paragraph ────────────────────────────────────
 function KimiUI:CreateParagraph(config, parent)
     config = config or {}
-    local title = config.Title or config.Name or ""
+    local title   = config.Title or config.Name or ""
     local content = config.Content or config.Text or ""
-    local align = config.Align or Enum.TextXAlignment.Left
+    local align   = config.Align or Enum.TextXAlignment.Left
 
     local paragraphFrame = Utility:Create("Frame", {
-        Name = (title ~= "" and title or "Paragraph") .. "Paragraph",
-        BackgroundColor3 = self.Theme.Secondary,
-        BackgroundTransparency = 0.4, -- Slightly acrylic
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 0), -- Auto Y
-        AutomaticSize = Enum.AutomaticSize.Y,
-        Parent = parent
+        Name             = (title ~= "" and title or "Paragraph") .. "Paragraph",
+        BackgroundColor3 = self.Theme.Foreground,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 0),
+        AutomaticSize    = Enum.AutomaticSize.Y,
+        Parent           = parent,
     })
     Utility:CreateCorner(paragraphFrame, 10)
-    Utility:CreateStroke(paragraphFrame, self.Theme.Border, 1, 0.8)
+    Utility:CreateStroke(paragraphFrame, self.Theme.Border, 1, 0.88)
 
-    local contentY = 14 -- Spacing top
+    local contentY = 12
     if title ~= "" then
-        local titleLabel = Utility:Create("TextLabel", {
-            Name = "Title",
+        Utility:Create("TextLabel", {
+            Name                 = "Title",
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 16, 0, 12),
-            Size = UDim2.new(1, -32, 0, 22),
-            Font = Enum.Font.GothamBold,
-            Text = title,
-            TextColor3 = self.Theme.Text, -- Primary title color
-            TextSize = 14,
-            TextXAlignment = align,
-            Parent = paragraphFrame
+            Position             = UDim2.new(0, 14, 0, 12),
+            Size                 = UDim2.new(1, -28, 0, 20),
+            Font                 = Enum.Font.GothamBlack,
+            Text                 = title,
+            TextColor3           = self.Theme.AccentLight,
+            TextSize             = 14,
+            TextXAlignment       = align,
+            Parent               = paragraphFrame,
         })
-        contentY = 38 -- Lower content position
+        contentY = 34
     end
-
     local contentLabel = Utility:Create("TextLabel", {
-        Name = "Content",
+        Name                 = "Content",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 16, 0, contentY),
-        Size = UDim2.new(1, -32, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        Font = Enum.Font.Gotham,
-        Text = content,
-        TextColor3 = self.Theme.TextDark,
-        TextSize = 13,
-        TextXAlignment = align,
-        TextWrapped = true,
-        Parent = paragraphFrame
+        Position             = UDim2.new(0, 14, 0, contentY),
+        Size                 = UDim2.new(1, -28, 0, 0),
+        AutomaticSize        = Enum.AutomaticSize.Y,
+        Font                 = Enum.Font.Gotham,
+        Text                 = content,
+        TextColor3           = self.Theme.TextDark,
+        TextSize             = 13,
+        TextXAlignment       = align,
+        TextWrapped          = true,
+        Parent               = paragraphFrame,
     })
-    
-    -- Bottom Padding auto updated by AutomaticSize Y
-    Utility:Create("UIPadding", {
-        PaddingBottom = UDim.new(0, 14),
-        PaddingLeft = UDim.new(0, 16),
-        PaddingRight = UDim.new(0, 16),
-        PaddingTop = UDim.new(0, 14),
-        Parent = paragraphFrame
-    })
-    
-    -- reset manual position if use UIPadding
-    if paragraphFrame:FindFirstChild("UIPadding") then
-        if paragraphFrame:FindFirstChild("Title") then paragraphFrame.Title.Position = UDim2.new(0,0,0,0) end
-        paragraphFrame.Content.Position = UDim2.new(0,0,0, title ~= "" and 28 or 0)
-    end
+    local textHeight = TextService:GetTextSize(content, 13, Enum.Font.Gotham, Vector2.new(paragraphFrame.AbsoluteSize.X - 28, 999)).Y
+    paragraphFrame.Size = UDim2.new(1, 0, 0, contentY + textHeight + 16)
 
     local Paragraph = {
         Frame = paragraphFrame,
-        Title = title,
-        Content = content,
-        Set = function(_, text) contentLabel.Text = text end,
-        Type = "Paragraph"
+        Set = function(_, text)
+            contentLabel.Text = text
+            local h = TextService:GetTextSize(text, 13, Enum.Font.Gotham, Vector2.new(paragraphFrame.AbsoluteSize.X - 28, 999)).Y
+            paragraphFrame.Size = UDim2.new(1, 0, 0, contentY + h + 16)
+        end,
+        Type = "Paragraph",
     }
     table.insert(self.Elements, Paragraph)
     return Paragraph
 end
 
--- dropdown, dialog, keybind follow...
---// Keybind Element (Premium with Modern Click)
-function KimiUI:CreateKeybind(config, parent, tabColor)
+-- ─── Keybind ──────────────────────────────────────
+function KimiUI:CreateKeybind(config, parent)
     config = config or {}
     local keybindName = config.Name or "Keybind"
-    local defaultKey = config.Default or config.Key or Enum.KeyCode.Unknown
-    local callback = config.Callback or function() end
-    local flag = config.Flag or nil
-    
-    local accentColor = tabColor or self.Theme.Accent
+    local defaultKey  = config.Default or config.Key or Enum.KeyCode.Unknown
+    local callback    = config.Callback or function() end
+    local onHold      = config.Hold or false
+    local flag        = config.Flag or nil
 
-    if typeof(defaultKey) == "string" then defaultKey = Enum.KeyCode[defaultKey] or Enum.KeyCode.Unknown end
+    if typeof(defaultKey) == "string" then
+        defaultKey = Enum.KeyCode[defaultKey] or Enum.KeyCode.Unknown
+    end
     if flag then self.Flags[flag] = defaultKey end
 
     local keybindFrame = Utility:Create("Frame", {
-        Name = keybindName .. "Keybind",
+        Name             = keybindName .. "Keybind",
         BackgroundColor3 = self.Theme.Foreground,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 48), -- Standard Premium Y
-        Parent = parent
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 44),
+        Parent           = parent,
     })
     Utility:CreateCorner(keybindFrame, 10)
-    Utility:CreateStroke(keybindFrame, self.Theme.Border, 1, 0.8)
+    Utility:CreateStroke(keybindFrame, self.Theme.Border, 1, 0.88)
 
-    keybindFrame.MouseEnter:Connect(function() Utility:Tween(keybindFrame, {BackgroundColor3 = self.Theme.Border}, 0.2) end)
-    keybindFrame.MouseLeave:Connect(function() Utility:Tween(keybindFrame, {BackgroundColor3 = self.Theme.Foreground}, 0.2) end)
-
-    local keybindLabel = Utility:Create("TextLabel", {
-        Name = "Label",
+    Utility:Create("TextLabel", {
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 16, 0, 0),
-        Size = UDim2.new(1, -140, 1, 0),
-        Font = Enum.Font.GothamSemibold,
-        Text = keybindName,
-        TextColor3 = self.Theme.Text,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = keybindFrame
+        Position               = UDim2.new(0, 14, 0, 0),
+        Size                   = UDim2.new(1, -140, 1, 0),
+        Font                   = Enum.Font.GothamSemibold,
+        Text                   = keybindName,
+        TextColor3             = self.Theme.Text,
+        TextSize               = 14,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        Parent                 = keybindFrame,
     })
-
-    -- Premium Box Design for Key
-    local keyBoxFrame = Utility:Create("Frame", {
-        Name = "KeyBox",
-        BackgroundColor3 = self.Theme.Secondary,
-        Position = UDim2.new(1, -100, 0.5, -14),
-        Size = UDim2.new(0, 84, 0, 28),
-        Parent = keybindFrame
-    })
-    Utility:CreateCorner(keyBoxFrame, 6)
-    Utility:CreateStroke(keyBoxFrame, self.Theme.Border, 1, 0.7)
-    
-    local keyBoxGlow = Utility:CreateGlow(keyBoxFrame, accentColor, 0.7, 12, 0)
-    keyBoxGlow.Enabled = false
 
     local keybindButton = Utility:Create("TextButton", {
-        Name = "KeyButton",
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, 0),
-        AutoButtonColor = false,
-        Font = Enum.Font.GothamBold,
-        Text = defaultKey ~= Enum.KeyCode.Unknown and defaultKey.Name or "NONE",
-        TextColor3 = accentColor,
-        TextSize = 13,
-        Parent = keyBoxFrame
+        Name                 = "KeyButton",
+        BackgroundColor3     = self.Theme.Primary,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(1, -112, 0.5, -14),
+        Size                 = UDim2.new(0, 80, 0, 28),
+        AutoButtonColor      = false,
+        Font                 = Enum.Font.GothamBold,
+        Text                 = defaultKey ~= Enum.KeyCode.Unknown and defaultKey.Name or "None",
+        TextColor3           = self.Theme.TextDark,
+        TextSize             = 12,
+        Parent               = keybindFrame,
     })
+    Utility:CreateCorner(keybindButton, 7)
+    Utility:CreateStroke(keybindButton, self.Theme.Border, 1, 0.7)
+
+    local clearBtn = Utility:Create("TextButton", {
+        Name                 = "Clear",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(1, -28, 0.5, -11),
+        Size                 = UDim2.new(0, 22, 0, 22),
+        Font                 = Enum.Font.GothamBold,
+        Text                 = "×",
+        TextColor3           = self.Theme.Error,
+        TextSize             = 18,
+        Parent               = keybindFrame,
+    })
+    clearBtn.MouseEnter:Connect(function() Utility:Tween(clearBtn, { TextColor3 = Utility:Brighten(self.Theme.Error, 0.1) }, 0.15) end)
+    clearBtn.MouseLeave:Connect(function() Utility:Tween(clearBtn, { TextColor3 = self.Theme.Error }, 0.15) end)
 
     local listening = false
     local currentKey = defaultKey
 
-    local function updateKey(key)
-        currentKey = key
-        keybindButton.Text = (currentKey ~= Enum.KeyCode.Unknown and currentKey.Name or "NONE")
-        if flag then self.Flags[flag] = currentKey end
-    end
-
     keybindButton.MouseButton1Click:Connect(function()
         listening = true
         keybindButton.Text = "..."
-        keyBoxGlow.Enabled = true
-        Utility:Tween(keyBoxFrame, {BackgroundColor3 = accentColor}, 0.2)
-        keybindButton.TextColor3 = Color3.fromRGB(10,10,15) -- Invert color
+        Utility:Tween(keybindButton, { BackgroundColor3 = self.Theme.Accent }, 0.2)
+        keybindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
-
+    clearBtn.MouseButton1Click:Connect(function()
+        currentKey = Enum.KeyCode.Unknown
+        keybindButton.Text = "None"
+        if flag then self.Flags[flag] = currentKey end
+    end)
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if listening then
             if input.UserInputType == Enum.UserInputType.Keyboard then
+                if input.KeyCode == Enum.KeyCode.Delete or input.KeyCode == Enum.KeyCode.Backspace then
+                    currentKey = Enum.KeyCode.Unknown; keybindButton.Text = "None"
+                else
+                    currentKey = input.KeyCode; keybindButton.Text = input.KeyCode.Name
+                end
                 listening = false
-                keyBoxGlow.Enabled = false
-                updateKey(input.KeyCode)
-                Utility:Tween(keyBoxFrame, {BackgroundColor3 = self.Theme.Secondary}, 0.2)
-                keybindButton.TextColor3 = accentColor
+                Utility:Tween(keybindButton, { BackgroundColor3 = self.Theme.Primary }, 0.2)
+                keybindButton.TextColor3 = self.Theme.TextDark
+                if flag then self.Flags[flag] = currentKey end
+            elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+                currentKey = "MouseButton1"; keybindButton.Text = "MB1"
+                listening = false
+                Utility:Tween(keybindButton, { BackgroundColor3 = self.Theme.Primary }, 0.2)
+                keybindButton.TextColor3 = self.Theme.TextDark
+            elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                currentKey = "MouseButton2"; keybindButton.Text = "MB2"
+                listening = false
+                Utility:Tween(keybindButton, { BackgroundColor3 = self.Theme.Primary }, 0.2)
+                keybindButton.TextColor3 = self.Theme.TextDark
             end
-        elseif not gameProcessed and currentKey ~= Enum.KeyCode.Unknown then
-            if input.KeyCode == currentKey then
-                -- Elegant scale on press
-                Utility:Tween(keybindFrame, {Size = UDim2.new(1, -5, 0, 46), Position = keybindFrame.Position + UDim2.new(0, 2.5, 0, 1)}, 0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, function()
-                    Utility:Tween(keybindFrame, {Size = UDim2.new(1, 0, 0, 48), Position = keybindFrame.Position - UDim2.new(0, 2.5, 0, 1)}, 0.15)
-                end)
-                callback()
+        elseif not gameProcessed then
+            local keyMatch = false
+            if typeof(currentKey) == "EnumItem" and input.KeyCode == currentKey then keyMatch = true
+            elseif currentKey == "MouseButton1" and input.UserInputType == Enum.UserInputType.MouseButton1 then keyMatch = true
+            elseif currentKey == "MouseButton2" and input.UserInputType == Enum.UserInputType.MouseButton2 then keyMatch = true
+            end
+            if keyMatch then
+                if onHold then callback(true) else callback() end
             end
         end
     end)
+    if onHold then
+        UserInputService.InputEnded:Connect(function(input)
+            local keyMatch = false
+            if typeof(currentKey) == "EnumItem" and input.KeyCode == currentKey then keyMatch = true
+            elseif currentKey == "MouseButton1" and input.UserInputType == Enum.UserInputType.MouseButton1 then keyMatch = true
+            elseif currentKey == "MouseButton2" and input.UserInputType == Enum.UserInputType.MouseButton2 then keyMatch = true
+            end
+            if keyMatch then callback(false) end
+        end)
+    end
 
     local Keybind = {
-        Frame = keybindFrame,
-        Key = currentKey,
-        Set = function(_, key) updateKey(key) end,
-        Type = "Keybind"
+        Frame = keybindFrame, Key = currentKey,
+        Set = function(_, key)
+            if typeof(key) == "string" then key = Enum.KeyCode[key] or key end
+            currentKey = key
+            keybindButton.Text = typeof(key) == "EnumItem" and key.Name or tostring(key)
+            if flag then KimiUI.CurrentWindow.Flags[flag] = currentKey end
+        end,
+        Type = "Keybind",
     }
     table.insert(self.Elements, Keybind)
     return Keybind
 end
 
---// Dialog, Input, Colorpicker follow same aesthetic logic... 
---// To keep code concise for example, only key elements re-styled.
---// Standard dialog/notify/popup can use default logic but re-skinned.
+-- ─── Colorpicker ──────────────────────────────────
+function KimiUI:CreateColorpicker(config, parent)
+    config = config or {}
+    local colorpickerName = config.Name or "Colorpicker"
+    local defaultColor    = config.Default or config.Color or Color3.fromRGB(139, 92, 246)
+    local callback        = config.Callback or function() end
+    local flag            = config.Flag or nil
 
---// Minimize Toggle
-function KimiUI:ToggleMinimize()
-    local mainFrame = self.MainFrame
-    local winGlow = self.WinGlow
-    if mainFrame.Size.Y.Offset <= 60 then -- Adjusted minimize height
-        mainFrame.ClipsDescendants = false
-        Utility:Tween(mainFrame, {Size = self.Config.Size or UDim2.new(0, 600, 0, 450)}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        Utility:Tween(winGlow, {ImageTransparency = 0.8}, 0.6)
+    if flag then self.Flags[flag] = defaultColor end
+    local h, s, v = Color3.toHSV(defaultColor)
+
+    local colorpickerFrame = Utility:Create("Frame", {
+        Name             = colorpickerName .. "Colorpicker",
+        BackgroundColor3 = self.Theme.Foreground,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 44),
+        ClipsDescendants = true,
+        Parent           = parent,
+    })
+    Utility:CreateCorner(colorpickerFrame, 10)
+    Utility:CreateStroke(colorpickerFrame, self.Theme.Border, 1, 0.88)
+
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 14, 0, 0),
+        Size                   = UDim2.new(1, -80, 1, 0),
+        Font                   = Enum.Font.GothamSemibold,
+        Text                   = colorpickerName,
+        TextColor3             = self.Theme.Text,
+        TextSize               = 14,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        Parent                 = colorpickerFrame,
+    })
+
+    local colorPreview = Utility:Create("TextButton", {
+        Name                 = "ColorPreview",
+        BackgroundColor3     = defaultColor,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(1, -54, 0.5, -14),
+        Size                 = UDim2.new(0, 46, 0, 28),
+        AutoButtonColor      = false,
+        Text                 = "",
+        Parent               = colorpickerFrame,
+    })
+    Utility:CreateCorner(colorPreview, 8)
+    Utility:CreateStroke(colorPreview, self.Theme.Border, 2, 0.4)
+
+    local pickerFrame = Utility:Create("Frame", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 14, 0, 52),
+        Size                   = UDim2.new(1, -28, 0, 195),
+        Parent                 = colorpickerFrame,
+    })
+
+    local svFrame = Utility:Create("Frame", {
+        BackgroundColor3 = Color3.fromHSV(h, 1, 1),
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, -34, 0, 130),
+        Parent           = pickerFrame,
+    })
+    Utility:CreateCorner(svFrame, 8)
+    Utility:Create("UIGradient", {
+        Color        = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255)) }),
+        Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }),
+        Parent       = svFrame,
+    })
+    Utility:Create("UIGradient", {
+        Color        = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0)) }),
+        Rotation     = 180,
+        Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) }),
+        Parent       = svFrame,
+    })
+
+    local svCursor = Utility:Create("Frame", {
+        AnchorPoint      = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(s, 0, 1 - v, 0),
+        Size             = UDim2.new(0, 14, 0, 14),
+        Parent           = svFrame,
+    })
+    Utility:CreateCorner(svCursor, 7)
+    Utility:CreateStroke(svCursor, Color3.fromRGB(0, 0, 0), 2)
+
+    local hueFrame = Utility:Create("Frame", {
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(1, -26, 0, 0),
+        Size             = UDim2.new(0, 22, 0, 130),
+        Parent           = pickerFrame,
+    })
+    Utility:CreateCorner(hueFrame, 8)
+    Utility:Create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,     Color3.fromRGB(255, 0,   0)),
+            ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)),
+            ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0,   255, 0)),
+            ColorSequenceKeypoint.new(0.5,   Color3.fromRGB(0,   255, 255)),
+            ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0,   0,   255)),
+            ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0,   255)),
+            ColorSequenceKeypoint.new(1,     Color3.fromRGB(255, 0,   0)),
+        }),
+        Rotation = 90,
+        Parent   = hueFrame,
+    })
+
+    local hueCursor = Utility:Create("Frame", {
+        AnchorPoint      = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0.5, 0, 1 - h, 0),
+        Size             = UDim2.new(1, 4, 0, 8),
+        Parent           = hueFrame,
+    })
+    Utility:CreateCorner(hueCursor, 4)
+    Utility:CreateStroke(hueCursor, Color3.fromRGB(0, 0, 0), 1.5)
+
+    -- RGB/HEX inputs
+    local inputsFrame = Utility:Create("Frame", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 0, 0, 138),
+        Size                   = UDim2.new(1, -34, 0, 30),
+        Parent                 = pickerFrame,
+    })
+    local r, g, b = math.floor(defaultColor.R * 255), math.floor(defaultColor.G * 255), math.floor(defaultColor.B * 255)
+    local rgbBox = Utility:Create("TextBox", {
+        BackgroundColor3 = self.Theme.Primary,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(0.48, 0, 1, 0),
+        Font             = Enum.Font.GothamBold,
+        Text             = string.format("%d, %d, %d", r, g, b),
+        TextColor3       = self.Theme.Text,
+        TextSize         = 11,
+        Parent           = inputsFrame,
+    })
+    Utility:CreateCorner(rgbBox, 5)
+    local hexBox = Utility:Create("TextBox", {
+        BackgroundColor3 = self.Theme.Primary,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0.52, 0, 0, 0),
+        Size             = UDim2.new(0.48, 0, 1, 0),
+        Font             = Enum.Font.GothamBold,
+        Text             = string.format("#%02X%02X%02X", r, g, b),
+        TextColor3       = self.Theme.AccentLight,
+        TextSize         = 11,
+        Parent           = inputsFrame,
+    })
+    Utility:CreateCorner(hexBox, 5)
+
+    local isOpen = false
+    local svDragging, hueDragging = false, false
+
+    local function updateColor()
+        local newColor = Color3.fromHSV(h, s, v)
+        colorPreview.BackgroundColor3 = newColor
+        svFrame.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+        local nr, ng, nb = math.floor(newColor.R * 255), math.floor(newColor.G * 255), math.floor(newColor.B * 255)
+        rgbBox.Text = string.format("%d, %d, %d", nr, ng, nb)
+        hexBox.Text = string.format("#%02X%02X%02X", nr, ng, nb)
+        if flag then self.Flags[flag] = newColor end
+        callback(newColor)
+    end
+
+    colorPreview.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        Utility:Tween(colorpickerFrame, { Size = UDim2.new(1, 0, 0, isOpen and 256 or 44) }, 0.3, Enum.EasingStyle.Quart)
+    end)
+
+    svFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            svDragging = true
+            s = math.clamp((input.Position.X - svFrame.AbsolutePosition.X) / svFrame.AbsoluteSize.X, 0, 1)
+            v = 1 - math.clamp((input.Position.Y - svFrame.AbsolutePosition.Y) / svFrame.AbsoluteSize.Y, 0, 1)
+            svCursor.Position = UDim2.new(s, 0, 1 - v, 0); updateColor()
+        end
+    end)
+    hueFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            hueDragging = true
+            h = 1 - math.clamp((input.Position.Y - hueFrame.AbsolutePosition.Y) / hueFrame.AbsoluteSize.Y, 0, 1)
+            hueCursor.Position = UDim2.new(0.5, 0, 1 - h, 0); updateColor()
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if svDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            s = math.clamp((input.Position.X - svFrame.AbsolutePosition.X) / svFrame.AbsoluteSize.X, 0, 1)
+            v = 1 - math.clamp((input.Position.Y - svFrame.AbsolutePosition.Y) / svFrame.AbsoluteSize.Y, 0, 1)
+            svCursor.Position = UDim2.new(s, 0, 1 - v, 0); updateColor()
+        elseif hueDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            h = 1 - math.clamp((input.Position.Y - hueFrame.AbsolutePosition.Y) / hueFrame.AbsoluteSize.Y, 0, 1)
+            hueCursor.Position = UDim2.new(0.5, 0, 1 - h, 0); updateColor()
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            svDragging = false; hueDragging = false
+        end
+    end)
+
+    local Colorpicker = {
+        Frame = colorpickerFrame, Color = defaultColor,
+        Set = function(_, color)
+            h, s, v = Color3.toHSV(color)
+            svCursor.Position  = UDim2.new(s, 0, 1 - v, 0)
+            hueCursor.Position = UDim2.new(0.5, 0, 1 - h, 0)
+            updateColor()
+        end,
+        Type = "Colorpicker",
+    }
+    table.insert(self.Elements, Colorpicker)
+    return Colorpicker
+end
+
+-- ─── Code Display ─────────────────────────────────
+function KimiUI:CreateCode(config, parent)
+    config = config or {}
+    local codeText        = config.Code or config.Text or ""
+    local language        = config.Language or "lua"
+    local showLineNumbers = config.LineNumbers ~= false
+
+    local codeFrame = Utility:Create("Frame", {
+        Name             = "CodeDisplay",
+        BackgroundColor3 = self.Theme.Primary,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 0),
+        AutomaticSize    = Enum.AutomaticSize.Y,
+        Parent           = parent,
+    })
+    Utility:CreateCorner(codeFrame, 12)
+    Utility:CreateStroke(codeFrame, self.Theme.BorderLight, 1, 0.7)
+
+    local codeHeader = Utility:Create("Frame", {
+        Name             = "Header",
+        BackgroundColor3 = self.Theme.Secondary,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 36),
+        Parent           = codeFrame,
+    })
+    Utility:CreateCorner(codeHeader, 12)
+    -- Fix bottom corners
+    Utility:Create("Frame", {
+        BackgroundColor3 = self.Theme.Secondary,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 0.5, 0),
+        Size             = UDim2.new(1, 0, 0.5, 0),
+        Parent           = codeHeader,
+    })
+
+    -- Language dots (like a terminal title bar)
+    local dot = function(xOffset, color)
+        local d = Utility:Create("Frame", {
+            BackgroundColor3 = color,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, xOffset, 0.5, -5),
+            Size             = UDim2.new(0, 10, 0, 10),
+            Parent           = codeHeader,
+        })
+        Utility:CreateCorner(d, 5)
+    end
+    dot(12, Color3.fromRGB(255, 95, 87))
+    dot(28, Color3.fromRGB(255, 189, 46))
+    dot(44, Color3.fromRGB(40, 205, 65))
+
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 68, 0, 0),
+        Size                   = UDim2.new(0, 100, 1, 0),
+        Font                   = Enum.Font.GothamBold,
+        Text                   = language:upper(),
+        TextColor3             = self.Theme.AccentLight,
+        TextSize               = 12,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        Parent                 = codeHeader,
+    })
+
+    local copyBtn = Utility:Create("TextButton", {
+        Name                 = "Copy",
+        BackgroundColor3     = self.Theme.Accent,
+        BackgroundTransparency = 0.75,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(1, -76, 0.5, -13),
+        Size                 = UDim2.new(0, 68, 0, 26),
+        AutoButtonColor      = false,
+        Font                 = Enum.Font.GothamBold,
+        Text                 = "⎘ Copy",
+        TextColor3           = self.Theme.AccentLight,
+        TextSize             = 11,
+        Parent               = codeHeader,
+    })
+    Utility:CreateCorner(copyBtn, 6)
+    copyBtn.MouseEnter:Connect(function() Utility:Tween(copyBtn, { BackgroundTransparency = 0.5 }, 0.15) end)
+    copyBtn.MouseLeave:Connect(function() Utility:Tween(copyBtn, { BackgroundTransparency = 0.75 }, 0.15) end)
+    copyBtn.MouseButton1Click:Connect(function()
+        if setclipboard then
+            setclipboard(codeText)
+            copyBtn.Text = "✓ Copied!"
+            task.wait(1.5)
+            copyBtn.Text = "⎘ Copy"
+        end
+    end)
+
+    local lineHeight    = 18
+    local lineNumWidth  = showLineNumbers and 40 or 0
+    if showLineNumbers then
+        local lineNumsFrame = Utility:Create("Frame", {
+            BackgroundTransparency = 1,
+            Position               = UDim2.new(0, 0, 0, 40),
+            Size                   = UDim2.new(0, 40, 1, -44),
+            Parent                 = codeFrame,
+        })
+        local lines = string.split(codeText, "\n")
+        for i = 1, #lines do
+            Utility:Create("TextLabel", {
+                BackgroundTransparency = 1,
+                Position               = UDim2.new(0, 0, 0, (i - 1) * lineHeight),
+                Size                   = UDim2.new(1, -6, 0, lineHeight),
+                Font                   = Enum.Font.Code,
+                Text                   = tostring(i),
+                TextColor3             = self.Theme.TextDarker,
+                TextSize               = 12,
+                TextXAlignment         = Enum.TextXAlignment.Right,
+                Parent                 = lineNumsFrame,
+            })
+        end
+        codeFrame.Size = UDim2.new(1, 0, 0, 48 + (#lines * lineHeight) + 10)
+        -- Line divider
+        Utility:Create("Frame", {
+            BackgroundColor3 = self.Theme.Border,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, 40, 0, 40),
+            Size             = UDim2.new(0, 1, 1, -44),
+            Parent           = codeFrame,
+        })
+    end
+
+    Utility:Create("TextLabel", {
+        Name                 = "Code",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, lineNumWidth + 12, 0, 40),
+        Size                 = UDim2.new(1, -lineNumWidth - 16, 1, -44),
+        Font                 = Enum.Font.Code,
+        Text                 = codeText,
+        TextColor3           = self.Theme.Text,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        TextYAlignment       = Enum.TextYAlignment.Top,
+        TextWrapped          = true,
+        Parent               = codeFrame,
+    })
+
+    local Code = { Frame = codeFrame, Code = codeText, Type = "Code" }
+    table.insert(self.Elements, Code)
+    return Code
+end
+
+-- ─── Advanced (Collapsible) ────────────────────────
+function KimiUI:CreateAdvanced(config, parent)
+    config = config or {}
+    local advancedName = config.Name or "Advanced"
+    local advancedDesc = config.Description or ""
+    local defaultOpen  = config.DefaultOpen or false
+
+    local advancedFrame = Utility:Create("Frame", {
+        Name             = advancedName .. "Advanced",
+        BackgroundColor3 = self.Theme.Foreground,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 48),
+        ClipsDescendants = true,
+        Parent           = parent,
+    })
+    Utility:CreateCorner(advancedFrame, 10)
+    Utility:CreateStroke(advancedFrame, self.Theme.Border, 1, 0.85)
+
+    local headerButton = Utility:Create("TextButton", {
+        Name                 = "Header",
+        BackgroundTransparency = 1,
+        Size                 = UDim2.new(1, 0, 0, 48),
+        AutoButtonColor      = false,
+        Text                 = "",
+        Parent               = advancedFrame,
+    })
+
+    Utility:Create("TextLabel", {
+        Name                 = "Title",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 14, 0, defaultOpen and 8 or 14),
+        Size                 = UDim2.new(1, -52, 0, 20),
+        Font                 = Enum.Font.GothamBlack,
+        Text                 = advancedName,
+        TextColor3           = self.Theme.Text,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = headerButton,
+    })
+
+    if advancedDesc ~= "" then
+        Utility:Create("TextLabel", {
+            Name                 = "Description",
+            BackgroundTransparency = 1,
+            Position             = UDim2.new(0, 14, 0, 26),
+            Size                 = UDim2.new(1, -52, 0, 16),
+            Font                 = Enum.Font.Gotham,
+            Text                 = advancedDesc,
+            TextColor3           = self.Theme.TextDarker,
+            TextSize             = 11,
+            TextXAlignment       = Enum.TextXAlignment.Left,
+            Parent               = headerButton,
+        })
+    end
+
+    local arrowIcon = Utility:Create("ImageLabel", {
+        Name                 = "Arrow",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(1, -38, 0, 12),
+        Size                 = UDim2.new(0, 24, 0, 24),
+        Image                = "rbxassetid://7072706663",
+        ImageColor3          = self.Theme.Accent,
+        Rotation             = defaultOpen and 180 or 0,
+        Parent               = headerButton,
+    })
+
+    local contentFrame = Utility:Create("Frame", {
+        Name                 = "Content",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 0, 0, 52),
+        Size                 = UDim2.new(1, 0, 0, 0),
+        Parent               = advancedFrame,
+    })
+    local contentLayout = Utility:CreateListLayout(contentFrame, 8)
+    Utility:CreatePadding(contentFrame, 10)
+
+    local isOpen = defaultOpen
+    headerButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        Utility:Tween(arrowIcon, { Rotation = isOpen and 180 or 0 }, 0.3, Enum.EasingStyle.Quart)
+        if isOpen then
+            local h = contentLayout.AbsoluteContentSize.Y + 20
+            Utility:Tween(advancedFrame, { Size = UDim2.new(1, 0, 0, 56 + h) }, 0.3, Enum.EasingStyle.Quart)
+            Utility:Tween(contentFrame, { Size = UDim2.new(1, 0, 0, h) }, 0.3, Enum.EasingStyle.Quart)
+        else
+            Utility:Tween(advancedFrame, { Size = UDim2.new(1, 0, 0, 48) }, 0.3, Enum.EasingStyle.Quart)
+            Utility:Tween(contentFrame, { Size = UDim2.new(1, 0, 0, 0) }, 0.3, Enum.EasingStyle.Quart)
+        end
+    end)
+    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if isOpen then
+            local h = contentLayout.AbsoluteContentSize.Y + 20
+            advancedFrame.Size = UDim2.new(1, 0, 0, 56 + h)
+            contentFrame.Size  = UDim2.new(1, 0, 0, h)
+        end
+    end)
+    if defaultOpen then
+        task.wait()
+        local h = contentLayout.AbsoluteContentSize.Y + 20
+        advancedFrame.Size = UDim2.new(1, 0, 0, 56 + h)
+        contentFrame.Size  = UDim2.new(1, 0, 0, h)
+    end
+
+    local Advanced = {
+        Frame    = advancedFrame,
+        Content  = contentFrame,
+        IsOpen   = isOpen,
+        AddButton     = function(_, c) return KimiUI.CurrentWindow:CreateButton(c, contentFrame) end,
+        AddToggle     = function(_, c) return KimiUI.CurrentWindow:CreateToggle(c, contentFrame) end,
+        AddSlider     = function(_, c) return KimiUI.CurrentWindow:CreateSlider(c, contentFrame) end,
+        AddInput      = function(_, c) return KimiUI.CurrentWindow:CreateInput(c, contentFrame) end,
+        AddDropdown   = function(_, c) return KimiUI.CurrentWindow:CreateDropdown(c, contentFrame) end,
+        AddParagraph  = function(_, c) return KimiUI.CurrentWindow:CreateParagraph(c, contentFrame) end,
+        AddKeybind    = function(_, c) return KimiUI.CurrentWindow:CreateKeybind(c, contentFrame) end,
+        AddColorpicker= function(_, c) return KimiUI.CurrentWindow:CreateColorpicker(c, contentFrame) end,
+        AddCode       = function(_, c) return KimiUI.CurrentWindow:CreateCode(c, contentFrame) end,
+        Type = "Advanced",
+    }
+    table.insert(self.Elements, Advanced)
+    return Advanced
+end
+
+-- ─── Divider ──────────────────────────────────────
+function KimiUI:CreateDivider(config, parent)
+    config = config or {}
+    local label = config.Label or ""
+
+    local divFrame = Utility:Create("Frame", {
+        Name                 = "Divider",
+        BackgroundTransparency = 1,
+        Size                 = UDim2.new(1, 0, 0, 20),
+        Parent               = parent,
+    })
+
+    if label ~= "" then
+        local labelWidth = TextService:GetTextSize(label, 11, Enum.Font.GothamBold, Vector2.new(999, 999)).X + 16
+        Utility:Create("Frame", {
+            BackgroundColor3 = self.Theme.Border,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, 0, 0.5, 0),
+            Size             = UDim2.new(0.5, -labelWidth/2 - 8, 0, 1),
+            Parent           = divFrame,
+        })
+        Utility:Create("TextLabel", {
+            BackgroundTransparency = 1,
+            AnchorPoint            = Vector2.new(0.5, 0.5),
+            Position               = UDim2.new(0.5, 0, 0.5, 0),
+            Size                   = UDim2.new(0, labelWidth, 1, 0),
+            Font                   = Enum.Font.GothamBold,
+            Text                   = label,
+            TextColor3             = self.Theme.TextDarker,
+            TextSize               = 11,
+            Parent                 = divFrame,
+        })
+        Utility:Create("Frame", {
+            BackgroundColor3 = self.Theme.Border,
+            BorderSizePixel  = 0,
+            AnchorPoint      = Vector2.new(1, 0),
+            Position         = UDim2.new(1, 0, 0.5, 0),
+            Size             = UDim2.new(0.5, -labelWidth/2 - 8, 0, 1),
+            Parent           = divFrame,
+        })
     else
-        Utility:Tween(winGlow, {ImageTransparency = 1}, 0.2)
-        Utility:Tween(mainFrame, {Size = UDim2.new(0, mainFrame.Size.X.Offset, 0, 48)}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-        mainFrame.ClipsDescendants = true
+        local line = Utility:Create("Frame", {
+            BackgroundColor3 = self.Theme.Border,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, 0, 0.5, 0),
+            Size             = UDim2.new(1, 0, 0, 1),
+            Parent           = divFrame,
+        })
+        Utility:CreateGradient(line, Color3.fromRGB(0,0,0), self.Theme.Accent, 0, 1, 0.6)
+    end
+
+    return { Frame = divFrame, Type = "Divider" }
+end
+
+-- ═══════════════════════════════════════════════════
+--  NOTIFICATION SYSTEM  (Premium Style)
+-- ═══════════════════════════════════════════════════
+function KimiUI:Notify(config)
+    config = config or {}
+    local notifyTitle   = config.Title or "Notification"
+    local notifyContent = config.Content or config.Message or config.Text or ""
+    local notifyType    = config.Type or "Info"
+    local duration      = config.Duration or 5
+
+    local notifyGui = Utility:Create("ScreenGui", {
+        Name         = "KimiUINotification",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        Parent       = self.ScreenGui.Parent,
+    })
+
+    local typeColors = {
+        Info    = self.Theme.Info,
+        Success = self.Theme.Success,
+        Warning = self.Theme.Warning,
+        Error   = self.Theme.Error,
+    }
+    local typeIcons = {
+        Info    = "rbxassetid://7733970536",
+        Success = "rbxassetid://7733973319",
+        Warning = "rbxassetid://7733956188",
+        Error   = "rbxassetid://7733951820",
+    }
+    local typeColor = typeColors[notifyType] or self.Theme.Info
+
+    local notifFrame = Utility:Create("Frame", {
+        Name             = "Notification",
+        BackgroundColor3 = self.Theme.Secondary,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(1, 20, 1, -120),
+        Size             = UDim2.new(0, 340, 0, 92),
+        Parent           = notifyGui,
+    })
+    Utility:CreateCorner(notifFrame, 12)
+    Utility:CreateShadow(notifFrame, 0.3, 18)
+    Utility:CreateStroke(notifFrame, typeColor, 1, 0.8)
+
+    -- Subtle background gradient
+    Utility:CreateGradient(notifFrame, Utility:Brighten(self.Theme.Secondary, 0.03), self.Theme.Secondary, 90)
+
+    -- Left color accent bar (wider, gradient)
+    local colorBar = Utility:Create("Frame", {
+        Name             = "ColorBar",
+        BackgroundColor3 = typeColor,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(0, 5, 1, 0),
+        Parent           = notifFrame,
+    })
+    Utility:CreateCorner(colorBar, 12)
+    Utility:Create("Frame", {
+        BackgroundColor3 = typeColor,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(1, -5, 0, 0),
+        Size             = UDim2.new(0, 5, 1, 0),
+        Parent           = colorBar,
+    })
+    Utility:CreateGradient(colorBar, Utility:Brighten(typeColor, 0.12), typeColor, 90)
+
+    -- Glow behind bar
+    Utility:Create("Frame", {
+        BackgroundColor3     = typeColor,
+        BackgroundTransparency = 0.72,
+        BorderSizePixel      = 0,
+        Size                 = UDim2.new(0, 14, 1, 0),
+        Parent               = notifFrame,
+    })
+
+    -- Icon with circular bg
+    local iconBg = Utility:Create("Frame", {
+        BackgroundColor3     = typeColor,
+        BackgroundTransparency = 0.8,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 22, 0, 18),
+        Size                 = UDim2.new(0, 30, 0, 30),
+        Parent               = notifFrame,
+    })
+    Utility:CreateCorner(iconBg, 8)
+    Utility:Create("ImageLabel", {
+        BackgroundTransparency = 1,
+        AnchorPoint            = Vector2.new(0.5, 0.5),
+        Position               = UDim2.new(0.5, 0, 0.5, 0),
+        Size                   = UDim2.new(0, 20, 0, 20),
+        Image                  = typeIcons[notifyType] or typeIcons.Info,
+        ImageColor3            = typeColor,
+        Parent                 = iconBg,
+    })
+
+    -- Title
+    Utility:Create("TextLabel", {
+        Name                 = "Title",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 62, 0, 14),
+        Size                 = UDim2.new(1, -96, 0, 22),
+        Font                 = Enum.Font.GothamBlack,
+        Text                 = notifyTitle,
+        TextColor3           = self.Theme.Text,
+        TextSize             = 14,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = notifFrame,
+    })
+
+    -- Content
+    Utility:Create("TextLabel", {
+        Name                 = "Content",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 62, 0, 38),
+        Size                 = UDim2.new(1, -76, 0, 38),
+        Font                 = Enum.Font.Gotham,
+        Text                 = notifyContent,
+        TextColor3           = self.Theme.TextDark,
+        TextSize             = 12,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        TextWrapped          = true,
+        Parent               = notifFrame,
+    })
+
+    -- Close button
+    local closeBtn = Utility:Create("TextButton", {
+        Name                 = "Close",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(1, -30, 0, 8),
+        Size                 = UDim2.new(0, 22, 0, 22),
+        Font                 = Enum.Font.GothamBold,
+        Text                 = "×",
+        TextColor3           = self.Theme.TextDark,
+        TextSize             = 20,
+        Parent               = notifFrame,
+    })
+    closeBtn.MouseEnter:Connect(function() Utility:Tween(closeBtn, { TextColor3 = self.Theme.Error }, 0.15) end)
+    closeBtn.MouseLeave:Connect(function() Utility:Tween(closeBtn, { TextColor3 = self.Theme.TextDark }, 0.15) end)
+
+    -- Progress bar countdown
+    local progressTrack = Utility:Create("Frame", {
+        Name             = "ProgressTrack",
+        BackgroundColor3 = self.Theme.Border,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 1, -4),
+        Size             = UDim2.new(1, 0, 0, 4),
+        Parent           = notifFrame,
+    })
+    Utility:CreateCorner(progressTrack, 2)
+    local progressBar = Utility:Create("Frame", {
+        Name             = "ProgressBar",
+        BackgroundColor3 = typeColor,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 1, 0),
+        Parent           = progressTrack,
+    })
+    Utility:CreateCorner(progressBar, 2)
+    Utility:CreateGradient(progressBar, Utility:Brighten(typeColor, 0.1), typeColor, 0)
+
+    -- Slide IN
+    Utility:Tween(notifFrame, { Position = UDim2.new(1, -360, 1, -120) }, 0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+    -- Start progress drain
+    task.delay(0.45, function()
+        Utility:Tween(progressBar, { Size = UDim2.new(0, 0, 1, 0) }, duration - 0.45, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+    end)
+
+    local function dismiss()
+        if notifFrame and notifFrame.Parent then
+            Utility:Tween(notifFrame, { Position = UDim2.new(1, 20, 1, -120) }, 0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.In, function()
+                if notifyGui and notifyGui.Parent then notifyGui:Destroy() end
+            end)
+        end
+    end
+
+    closeBtn.MouseButton1Click:Connect(dismiss)
+    task.delay(duration, dismiss)
+end
+
+-- ═══════════════════════════════════════════════════
+--  DIALOG SYSTEM  (Premium Style)
+-- ═══════════════════════════════════════════════════
+function KimiUI:Dialog(config)
+    config = config or {}
+    local dialogTitle   = config.Title or "Dialog"
+    local dialogContent = config.Content or config.Text or ""
+    local dialogType    = config.Type or "Confirm"
+    local confirmText   = config.ConfirmText or "Confirm"
+    local cancelText    = config.CancelText  or "Cancel"
+    local placeholder   = config.Placeholder or ""
+    local onConfirm     = config.OnConfirm or function() end
+    local onCancel      = config.OnCancel  or function() end
+
+    local dialogGui = Utility:Create("ScreenGui", {
+        Name         = "KimiUIDialog",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        Parent       = self.ScreenGui.Parent,
+    })
+
+    local backdrop = Utility:Create("Frame", {
+        Name                 = "Backdrop",
+        BackgroundColor3     = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel      = 0,
+        Size                 = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Parent               = dialogGui,
+    })
+    Utility:Tween(backdrop, { BackgroundTransparency = 0.55 }, 0.3)
+
+    local contentHeight = TextService:GetTextSize(dialogContent, 14, Enum.Font.Gotham, Vector2.new(320, 999)).Y
+    local promptOffset  = dialogType == "Prompt" and 50 or 0
+    local dialogHeight  = math.max(200, 96 + contentHeight + promptOffset + 72)
+
+    local dialogFrame = Utility:Create("Frame", {
+        Name             = "Dialog",
+        BackgroundColor3 = self.Theme.Secondary,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0.5, -190, 0.5, -(dialogHeight / 2)),
+        Size             = UDim2.new(0, 0, 0, 0),
+        Parent           = dialogGui,
+    })
+    Utility:CreateCorner(dialogFrame, 14)
+    Utility:CreateShadow(dialogFrame, 0.22, 24)
+    Utility:CreateStroke(dialogFrame, self.Theme.Accent, 1.5, 0.75)
+    Utility:CreateGradient(dialogFrame, Utility:Brighten(self.Theme.Secondary, 0.04), self.Theme.Secondary, 90)
+
+    -- Icon
+    local iconBg = Utility:Create("Frame", {
+        BackgroundColor3     = self.Theme.Accent,
+        BackgroundTransparency = 0.82,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 20, 0, 20),
+        Size                 = UDim2.new(0, 32, 0, 32),
+        Parent               = dialogFrame,
+    })
+    Utility:CreateCorner(iconBg, 9)
+    Utility:Create("ImageLabel", {
+        BackgroundTransparency = 1,
+        AnchorPoint            = Vector2.new(0.5, 0.5),
+        Position               = UDim2.new(0.5, 0, 0.5, 0),
+        Size                   = UDim2.new(0, 22, 0, 22),
+        Image                  = "rbxassetid://7733970536",
+        ImageColor3            = self.Theme.AccentLight,
+        Parent                 = iconBg,
+    })
+
+    Utility:Create("TextLabel", {
+        Name                 = "Title",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 62, 0, 22),
+        Size                 = UDim2.new(1, -82, 0, 28),
+        Font                 = Enum.Font.GothamBlack,
+        Text                 = dialogTitle,
+        TextColor3           = self.Theme.Text,
+        TextSize             = 18,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        Parent               = dialogFrame,
+    })
+
+    Utility:Create("Frame", {
+        BackgroundColor3 = self.Theme.Border,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 20, 0, 58),
+        Size             = UDim2.new(1, -40, 0, 1),
+        Parent           = dialogFrame,
+    })
+
+    Utility:Create("TextLabel", {
+        Name                 = "Content",
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 20, 0, 66),
+        Size                 = UDim2.new(1, -40, 0, 0),
+        AutomaticSize        = Enum.AutomaticSize.Y,
+        Font                 = Enum.Font.Gotham,
+        Text                 = dialogContent,
+        TextColor3           = self.Theme.TextDark,
+        TextSize             = 14,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+        TextWrapped          = true,
+        Parent               = dialogFrame,
+    })
+
+    local promptInput = nil
+    if dialogType == "Prompt" then
+        promptInput = Utility:Create("TextBox", {
+            Name                 = "PromptInput",
+            BackgroundColor3     = self.Theme.Primary,
+            BorderSizePixel      = 0,
+            Position             = UDim2.new(0, 20, 0, 72 + contentHeight),
+            Size                 = UDim2.new(1, -40, 0, 38),
+            Font                 = Enum.Font.Gotham,
+            PlaceholderText      = placeholder,
+            PlaceholderColor3    = self.Theme.TextDarker,
+            Text                 = "",
+            TextColor3           = self.Theme.Text,
+            TextSize             = 14,
+            Parent               = dialogFrame,
+        })
+        Utility:CreateCorner(promptInput, 8)
+        Utility:CreatePadding(promptInput, 12)
+        Utility:CreateStroke(promptInput, self.Theme.Border, 1, 0.65)
+    end
+
+    local buttonsY = dialogHeight - 60
+
+    local function closeDialog()
+        Utility:Tween(backdrop, { BackgroundTransparency = 1 }, 0.2)
+        Utility:Tween(dialogFrame, { Size = UDim2.new(0, 0, 0, 0) }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In, function()
+            dialogGui:Destroy()
+        end)
+    end
+
+    if dialogType == "Confirm" or dialogType == "Prompt" then
+        local cancelBtn = Utility:Create("TextButton", {
+            Name                 = "Cancel",
+            BackgroundColor3     = self.Theme.Foreground,
+            BorderSizePixel      = 0,
+            Position             = UDim2.new(0, 20, 0, buttonsY),
+            Size                 = UDim2.new(0.5, -30, 0, 40),
+            AutoButtonColor      = false,
+            Font                 = Enum.Font.GothamBold,
+            Text                 = cancelText,
+            TextColor3           = self.Theme.Text,
+            TextSize             = 14,
+            Parent               = dialogFrame,
+        })
+        Utility:CreateCorner(cancelBtn, 10)
+        cancelBtn.MouseEnter:Connect(function() Utility:Tween(cancelBtn, { BackgroundColor3 = self.Theme.Primary }, 0.2) end)
+        cancelBtn.MouseLeave:Connect(function() Utility:Tween(cancelBtn, { BackgroundColor3 = self.Theme.Foreground }, 0.2) end)
+        cancelBtn.MouseButton1Click:Connect(function()
+            closeDialog(); onCancel()
+        end)
+    end
+
+    local confirmBtn = Utility:Create("TextButton", {
+        Name                 = "Confirm",
+        BackgroundColor3     = self.Theme.Accent,
+        BorderSizePixel      = 0,
+        Position             = dialogType == "Alert"
+            and UDim2.new(0.25, 0, 0, buttonsY)
+            or  UDim2.new(0.5, 10, 0, buttonsY),
+        Size                 = dialogType == "Alert"
+            and UDim2.new(0.5, 0, 0, 40)
+            or  UDim2.new(0.5, -30, 0, 40),
+        AutoButtonColor      = false,
+        Font                 = Enum.Font.GothamBlack,
+        Text                 = confirmText,
+        TextColor3           = Color3.fromRGB(255, 255, 255),
+        TextSize             = 14,
+        Parent               = dialogFrame,
+    })
+    Utility:CreateCorner(confirmBtn, 10)
+    Utility:CreateGradient(confirmBtn, self.Theme.AccentLight, self.Theme.AccentDark, 90)
+    Utility:CreateRipple(confirmBtn)
+    confirmBtn.MouseEnter:Connect(function() Utility:Tween(confirmBtn, { BackgroundColor3 = self.Theme.AccentLight }, 0.2) end)
+    confirmBtn.MouseLeave:Connect(function() Utility:Tween(confirmBtn, { BackgroundColor3 = self.Theme.Accent }, 0.2) end)
+    confirmBtn.MouseButton1Click:Connect(function()
+        closeDialog()
+        if dialogType == "Prompt" and promptInput then onConfirm(promptInput.Text) else onConfirm() end
+    end)
+
+    -- Entrance animation
+    Utility:Tween(dialogFrame, { Size = UDim2.new(0, 380, 0, dialogHeight) }, 0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    return dialogGui
+end
+
+-- ═══════════════════════════════════════════════════
+--  POPUP SYSTEM
+-- ═══════════════════════════════════════════════════
+function KimiUI:Popup(config)
+    config = config or {}
+    local popupTitle   = config.Title or "Popup"
+    local popupContent = config.Content or ""
+    local buttons      = config.Buttons or {}
+    local position     = config.Position or UDim2.new(0.5, -160, 0.5, -80)
+
+    local popupGui = Utility:Create("ScreenGui", {
+        Name         = "KimiUIPopup",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        Parent       = self.ScreenGui.Parent,
+    })
+    Utility:Create("Frame", {
+        BackgroundColor3     = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.6,
+        Size                 = UDim2.new(1, 0, 1, 0),
+        Parent               = popupGui,
+    })
+
+    local popupFrame = Utility:Create("Frame", {
+        Name             = "Popup",
+        BackgroundColor3 = self.Theme.Secondary,
+        BorderSizePixel  = 0,
+        Position         = position,
+        Size             = UDim2.new(0, 0, 0, 0),
+        Parent           = popupGui,
+    })
+    Utility:CreateCorner(popupFrame, 14)
+    Utility:CreateShadow(popupFrame, 0.28, 18)
+    Utility:CreateStroke(popupFrame, self.Theme.Border, 1, 0.6)
+
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 18, 0, 16),
+        Size                   = UDim2.new(1, -36, 0, 24),
+        Font                   = Enum.Font.GothamBlack,
+        Text                   = popupTitle,
+        TextColor3             = self.Theme.Text,
+        TextSize               = 16,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        Parent                 = popupFrame,
+    })
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 18, 0, 46),
+        Size                   = UDim2.new(1, -36, 0, 0),
+        AutomaticSize          = Enum.AutomaticSize.Y,
+        Font                   = Enum.Font.Gotham,
+        Text                   = popupContent,
+        TextColor3             = self.Theme.TextDark,
+        TextSize               = 13,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        TextWrapped            = true,
+        Parent                 = popupFrame,
+    })
+
+    local btnsFrame = Utility:Create("Frame", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 18, 1, -50),
+        Size                   = UDim2.new(1, -36, 0, 40),
+        Parent                 = popupFrame,
+    })
+    Utility:Create("UIListLayout", {
+        FillDirection         = Enum.FillDirection.Horizontal,
+        Padding               = UDim.new(0, 8),
+        HorizontalAlignment   = Enum.HorizontalAlignment.Right,
+        Parent                = btnsFrame,
+    })
+
+    for i, btnCfg in pairs(buttons) do
+        local isPrimary = btnCfg.Style == "Primary"
+        local btn = Utility:Create("TextButton", {
+            BackgroundColor3 = isPrimary and self.Theme.Accent or self.Theme.Foreground,
+            BorderSizePixel  = 0,
+            Size             = UDim2.new(0, 90, 1, 0),
+            AutoButtonColor  = false,
+            Font             = Enum.Font.GothamBold,
+            Text             = btnCfg.Text or "Button",
+            TextColor3       = isPrimary and Color3.fromRGB(255,255,255) or self.Theme.Text,
+            TextSize         = 13,
+            Parent           = btnsFrame,
+        })
+        Utility:CreateCorner(btn, 9)
+        if isPrimary then
+            Utility:CreateGradient(btn, self.Theme.AccentLight, self.Theme.AccentDark, 90)
+            btn.MouseEnter:Connect(function() Utility:Tween(btn, { BackgroundColor3 = self.Theme.AccentLight }, 0.2) end)
+            btn.MouseLeave:Connect(function() Utility:Tween(btn, { BackgroundColor3 = self.Theme.Accent }, 0.2) end)
+        else
+            btn.MouseEnter:Connect(function() Utility:Tween(btn, { BackgroundColor3 = self.Theme.Primary }, 0.2) end)
+            btn.MouseLeave:Connect(function() Utility:Tween(btn, { BackgroundColor3 = self.Theme.Foreground }, 0.2) end)
+        end
+        btn.MouseButton1Click:Connect(function()
+            popupGui:Destroy()
+            if btnCfg.Callback then btnCfg.Callback() end
+        end)
+    end
+
+    Utility:Tween(popupFrame, { Size = UDim2.new(0, 320, 0, 170) }, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    return popupGui
+end
+
+-- ═══════════════════════════════════════════════════
+--  TAG SYSTEM  (Premium)
+-- ═══════════════════════════════════════════════════
+function KimiUI:CreateTag(config, parent)
+    config = config or {}
+    local tagText    = config.Text or "Tag"
+    local tagColor   = config.Color or self.Theme.Accent
+    local tagStyle   = config.Style or "Filled"
+    local tagVariant = config.Variant or "Primary"
+
+    if tagVariant and not config.Color then
+        local vc = {
+            Primary = self.Theme.TagPrimary,
+            Success = self.Theme.TagSuccess,
+            Warning = self.Theme.TagWarning,
+            Error   = self.Theme.TagError,
+            Info    = self.Theme.TagInfo,
+        }
+        tagColor = vc[tagVariant] or self.Theme.Accent
+    end
+
+    local textWidth = TextService:GetTextSize(tagText, 11, Enum.Font.GothamBold, Vector2.new(999, 26)).X
+    local tagFrame = Utility:Create("Frame", {
+        Name                 = tagText .. "Tag",
+        BackgroundColor3     = tagStyle == "Filled" and tagColor or self.Theme.Secondary,
+        BackgroundTransparency = tagStyle == "Ghost" and 0.85 or 0,
+        BorderSizePixel      = 0,
+        Size                 = UDim2.new(0, textWidth + 22, 0, 26),
+        Parent               = parent,
+    })
+    Utility:CreateCorner(tagFrame, 6)
+
+    if tagStyle == "Filled" then
+        Utility:CreateGradient(tagFrame, Utility:Brighten(tagColor, 0.1), tagColor, 90)
+    elseif tagStyle == "Outline" then
+        Utility:CreateStroke(tagFrame, tagColor, 1.5, 0.45)
+    end
+
+    Utility:Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Position               = UDim2.new(0, 11, 0, 0),
+        Size                   = UDim2.new(0, textWidth, 1, 0),
+        Font                   = Enum.Font.GothamBold,
+        Text                   = tagText,
+        TextColor3             = tagStyle == "Filled" and Color3.fromRGB(255, 255, 255) or tagColor,
+        TextSize               = 11,
+        Parent                 = tagFrame,
+    })
+
+    local Tag = {
+        Frame = tagFrame, Text = tagText,
+        Set = function(_, text)
+            local newWidth = TextService:GetTextSize(text, 11, Enum.Font.GothamBold, Vector2.new(999, 26)).X
+            tagFrame.Size = UDim2.new(0, newWidth + 22, 0, 26)
+        end,
+        Type = "Tag",
+    }
+    return Tag
+end
+
+-- ═══════════════════════════════════════════════════
+--  WINDOW UTILITIES
+-- ═══════════════════════════════════════════════════
+function KimiUI:ToggleMinimize()
+    local mf = self.MainFrame
+    if mf.Size.Y.Offset <= 54 then
+        Utility:Tween(mf, { Size = self.Config.Size or UDim2.new(0, 720, 0, 520) }, 0.38, Enum.EasingStyle.Quart)
+    else
+        Utility:Tween(mf, { Size = UDim2.new(0, mf.Size.X.Offset, 0, 48) }, 0.38, Enum.EasingStyle.Quart)
     end
 end
 
--- Load/Save Config functions remain standard logic...
---// Save Config
-function KimiUI:SaveConfig(filename)
-    if not filename then return end
-    if not isfolder("KimiUI") then makefolder("KimiUI") end
-    local configData = {}
-    for flag, value in pairs(self.Flags) do
-        if typeof(value) == "EnumItem" then configData[flag] = {Type = "Enum", Value = tostring(value)}
-        else configData[flag] = value end
+function KimiUI:Destroy()
+    if self.ScreenGui then self.ScreenGui:Destroy() end
+    KimiUI.CurrentWindow = nil
+end
+
+function KimiUI:GetFlag(flag)
+    return self.Flags[flag]
+end
+
+function KimiUI:SetFlag(flag, value)
+    self.Flags[flag] = value
+    for _, element in pairs(self.Elements) do
+        if element.Flag == flag and element.Set then element:Set(value) end
     end
-    writefile("KimiUI/" .. filename .. ".json", HttpService:JSONEncode(configData))
+end
+
+function KimiUI:SaveConfig(filename)
+    if not filename or not isfolder then return end
+    if not isfolder("KimiUI") then makefolder("KimiUI") end
+    if not isfolder("KimiUI/Configs") then makefolder("KimiUI/Configs") end
+    local data = {}
+    for flag, value in pairs(self.Flags) do
+        if typeof(value) == "Color3" then
+            data[flag] = { Type = "Color3", R = value.R, G = value.G, B = value.B }
+        elseif typeof(value) == "EnumItem" then
+            data[flag] = { Type = "Enum", Value = tostring(value) }
+        else
+            data[flag] = value
+        end
+    end
+    writefile("KimiUI/Configs/" .. filename .. ".json", HttpService:JSONEncode(data))
+end
+
+function KimiUI:LoadConfig(filename)
+    if not filename or not isfile then return end
+    local path = "KimiUI/Configs/" .. filename .. ".json"
+    if not isfile(path) then return end
+    local ok, data = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
+    if not ok then return end
+    for flag, value in pairs(data) do
+        if typeof(value) == "table" then
+            if value.Type == "Color3" then self:SetFlag(flag, Color3.new(value.R, value.G, value.B)) end
+        else
+            self:SetFlag(flag, value)
+        end
+    end
 end
 
 return KimiUI
